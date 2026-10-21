@@ -21,3 +21,7 @@
 
 
 [![available in chrome web store](https://wd.imgix.net/image/BrQidfK9jaQyIHwdw91aVpkPiib2/LclHxMxqoswLNRcUW3m5.png)](https://chrome.google.com/webstore/detail/atarashii-new-tab-page/dlhcacedlaiagoocbbgkeclgklanpmim)
+
+## Acknowledgements / Fork Info
+
+This project is a continuation and rewrite of [atarashii-tab](https://github.com/cf12/atarashii-tab) by @cf12, licensed under the MIT License.
