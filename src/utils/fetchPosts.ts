@@ -1,5 +1,6 @@
 import type { ConfigState } from "../stores/ConfigStore"
 import type { RedditPost } from "../stores/HistoryStore"
+import { fetchRssPosts } from "./fetchRss"
 
 type RedditSearchResponse = {
   data: {
@@ -8,11 +9,12 @@ type RedditSearchResponse = {
   }
 }
 
-export async function fetchPosts(config: ConfigState) {
+const fetchJsonPosts = async (config: ConfigState) => {
   let posts: Array<RedditPost & { thumbnail?: string }> = []
   let after: string | null = null
+  const seenCursors = new Set<string>()
 
-  while (posts.length < 200) {
+  for (let page = 0; page < 8 && posts.length < 200; page += 1) {
     const query = new URLSearchParams({
       q: config.q.toString(),
       sort: config.sort.toString(),
@@ -26,16 +28,46 @@ export async function fetchPosts(config: ConfigState) {
     const res = await fetch(
       `https://www.reddit.com/r/Animewallpaper/search.json?${query}`,
     )
+    if (!res.ok) {
+      throw new Error(`Reddit responded with status ${res.status}`)
+    }
+
     const json = (await res.json()) as RedditSearchResponse
 
-    posts = posts.concat(json.data.children.map((child) => child.data))
+    posts = posts
+      .concat(json.data.children.map((child) => child.data))
+      .slice(0, 200)
     after = json.data.after
-    if (!after) break
+    if (!after || seenCursors.has(after)) break
+    seenCursors.add(after)
   }
 
-  // Filter by NSFW if enabled
-  if (config.nsfw) posts = posts.filter((e) => e.thumbnail === "nsfw")
-
-  posts = posts.filter((e) => e.url.includes("i.redd.it"))
   return posts
+}
+
+export async function fetchPosts(config: ConfigState) {
+  let posts: Array<RedditPost & { thumbnail?: string }>
+
+  try {
+    posts = await fetchJsonPosts(config)
+  } catch (jsonError) {
+    try {
+      posts = await fetchRssPosts(config)
+    } catch (rssError) {
+      throw new Error(
+        `Failed to fetch Reddit posts from both the JSON API and RSS feed: ${String(jsonError)}`,
+        { cause: rssError },
+      )
+    }
+  }
+
+  if (config.nsfw) posts = posts.filter((post) => post.thumbnail === "nsfw")
+
+  return posts.filter((post) => {
+    try {
+      return new URL(post.url).hostname === "i.redd.it"
+    } catch {
+      return false
+    }
+  })
 }

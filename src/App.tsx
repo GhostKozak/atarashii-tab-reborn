@@ -60,7 +60,7 @@ function App() {
     let ignore = false
 
     async function run() {
-      let posts: RedditPost[] = []
+      let posts: RedditPost[]
 
       // Cache for 24 hours
       if (
@@ -93,7 +93,12 @@ function App() {
       setLoaded(LoadState.LOADING)
     }
 
-    run()
+    void run().catch((error: unknown) => {
+      if (ignore) return
+
+      console.error("[!] Failed to load Reddit posts:", error)
+      setLoaded(LoadState.LOADED)
+    })
 
     return () => {
       ignore = true
