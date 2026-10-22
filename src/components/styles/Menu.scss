@@ -412,17 +412,19 @@
   }
 
   .settings-panel {
-    display: flex;
-    flex-wrap: wrap;
-    align-content: flex-start;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 14px;
     width: 100%;
+  }
+
+  .settings-search {
+    grid-column: 1 / -1;
   }
 
   .settings-section {
     display: flex;
     flex-direction: column;
-    flex: 1 1 280px;
     gap: 18px;
     border: 1px solid rgba(white, 0.18);
     border-radius: 12px;
@@ -767,6 +769,10 @@
       > button {
         grid-column: auto;
       }
+    }
+
+    .settings-panel {
+      grid-template-columns: minmax(0, 1fr);
     }
   }
 }

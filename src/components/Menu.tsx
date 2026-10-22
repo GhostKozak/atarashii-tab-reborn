@@ -429,7 +429,7 @@ export default function Menu () {
           </section>
         ) : (
           <div className="settings-panel" aria-label="Settings">
-            <section className="settings-section">
+            <section className="settings-section settings-search">
               <div className="settings-header">
                 <h2>Search Wallpapers</h2>
                 <p>Choose a source, then search its available wallpapers.</p>
@@ -728,7 +728,7 @@ export default function Menu () {
               </button>
             </section>
 
-            <section className="settings-section">
+            <section className="settings-section settings-accent">
               <div className="settings-header">
                 <h2>Accent Color</h2>
                 <p>Customize the primary color used for highlights and links.</p>
@@ -767,7 +767,7 @@ export default function Menu () {
               </div>
             </section>
 
-            <section className="settings-section">
+            <section className="settings-section settings-dim">
               <div className="settings-header">
                 <h2>Background Dim</h2>
                 <p>
@@ -795,7 +795,7 @@ export default function Menu () {
               />
             </section>
 
-            <section className="settings-section">
+            <section className="settings-section settings-effects">
               <div className="settings-header">
                 <h2>Reroll Effects</h2>
                 <p>Choose which effects play when rolling a new wallpaper.</p>
@@ -830,7 +830,7 @@ export default function Menu () {
               </span>
             </section>
 
-            <section className="settings-section">
+            <section className="settings-section settings-background">
               <div className="settings-header">
                 <h2>Background Image</h2>
                 <p>Adjust how wallpapers fit and appear on the new tab.</p>
