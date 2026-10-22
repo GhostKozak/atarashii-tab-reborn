@@ -16,7 +16,12 @@
 
 ## Firefox
 
-Build the extension with `pnpm build`, then open `about:debugging#/runtime/this-firefox` in Firefox and choose **Load Temporary Add-on**. Select `dist/manifest.json`.
+Run `pnpm build:packages` to build and zip separate browser packages:
+
+- Chrome: `dist/atarashii-tab-chrome.zip`
+- Firefox: `dist/atarashii-tab-firefox.zip`
+
+The command requires the `zip` command-line utility. To load the unpacked build temporarily in Firefox, open `about:debugging#/runtime/this-firefox` and select `dist/firefox/manifest.json`.
 
 Temporary add-ons are removed when Firefox closes. A permanent Firefox installation requires a signed release from Mozilla Add-ons.
 

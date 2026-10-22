@@ -19,6 +19,7 @@
     "dev": "vp dev",
     "build": "vp build",
     "build:strict": "tsc -b && vp build",
+    "build:packages": "pnpm build:strict && node scripts/package-extensions.mjs",
     "lint": "vp lint .",
     "preview": "vp preview",
     "test": "vp test",
