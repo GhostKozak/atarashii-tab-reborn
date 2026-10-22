@@ -154,7 +154,7 @@ export type ConfigStateToggleableFields = {
 
 export const { store: ConfigStore } = await persist<ConfigState>(
   {
-    source: "reddit",
+    source: "wallhaven",
     num: undefined,
     q: `flair:"Desktop"`,
     wallhavenQ: "",
@@ -213,7 +213,7 @@ export const { store: ConfigStore } = await persist<ConfigState>(
 )
 
 Object.assign(ConfigStore, {
-  source: ConfigStore.source ?? "reddit",
+  source: ConfigStore.source ?? "wallhaven",
   wallhavenQ: ConfigStore.wallhavenQ ?? "",
   wallhavenApiKey: ConfigStore.wallhavenApiKey ?? "",
   wallhavenCategories: ConfigStore.wallhavenCategories ?? {
