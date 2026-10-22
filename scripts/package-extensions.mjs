@@ -4,6 +4,7 @@ import {
   mkdir,
   readFile,
   readdir,
+  rmdir,
   rm,
   writeFile,
 } from "node:fs/promises"
@@ -33,6 +34,15 @@ for (const [browser, archiveName] of Object.entries(packageNames)) {
       path.join(browserDirectory, name),
       { recursive: true },
     )
+  }
+
+  if (buildEntries.some(({ name }) => name === "public")) {
+    const publicDirectory = path.join(browserDirectory, "public")
+    const duplicateManifestPath = path.join(publicDirectory, "manifest.json")
+    await rm(duplicateManifestPath, { force: true })
+    if ((await readdir(publicDirectory)).length === 0) {
+      await rmdir(publicDirectory)
+    }
   }
 
   const manifest = { ...baseManifest }
