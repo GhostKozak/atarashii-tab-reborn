@@ -4,6 +4,15 @@ on:
   push:
     tags:
       - "*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing Git tag to package and publish
+        required: true
+        type: string
+
+permissions:
+  contents: write
 
 jobs:
   build:
@@ -11,6 +20,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.tag || github.ref }}
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -31,4 +42,5 @@ jobs:
         uses: ncipollo/release-action@v1
         with:
           artifacts: dist/atarashii-tab-reborn-chrome.zip,dist/atarashii-tab-reborn-firefox.zip
+          tag: ${{ github.event.inputs.tag || github.ref_name }}
           immutableCreate: true
