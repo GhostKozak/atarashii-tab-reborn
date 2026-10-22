@@ -249,7 +249,7 @@ function App() {
             <div className="credits">
               <p>
                 Created with <FaHeart /> •{" "}
-                <a href="https://github.com/cf12/atarashii-tab">v{pkg.version}</a>
+                <a href="https://github.com/GhostKozak/atarashii-tab-reborn">v{pkg.version}</a>
               </p>
             </div>
 

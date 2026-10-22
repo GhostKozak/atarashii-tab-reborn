@@ -61,7 +61,7 @@ Reddit and Wallhaven are third-party services and have their own privacy practic
 
 - This project is a continuation and rewrite of [atarashii-tab](https://github.com/cf12/atarashii-tab) by [@cf12](https://github.com/cf12), originally licensed under the MIT License. See [LICENSE](LICENSE).
 - Wallpaper results are provided by [r/Animewallpaper](https://www.reddit.com/r/Animewallpaper/) and the [Wallhaven API](https://wallhaven.cc/help/api). Artwork remains the property of its respective artists and creators.
-- Promotional artwork: [「GG~ありがと〜！」](https://www.pixiv.net/en/artworks/84017469) by [HOJI](https://www.pixiv.net/en/users/19133926) on [pixiv](https://www.pixiv.net/).
+- Promotional artwork: Original artwork created for **Atarashii Tab Reborn** (`marketing/marquee_promo_tile.png`).
 
 ## AI-assisted development
 
