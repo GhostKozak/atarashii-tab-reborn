@@ -8,6 +8,7 @@ import userEvent from "@testing-library/user-event"
 import { describe, expect, it, vi } from "vite-plus/test"
 import Config from "../src/components/Config"
 import { AppStore, LoadState } from "../src/stores/AppStore"
+import { CacheStore } from "../src/stores/CacheStore"
 import {
   CONFIG_STATE_PICKABLE_FIELDS_MAP,
   CONFIG_STATE_TOGGLEABLE_FIELDS,
@@ -79,6 +80,35 @@ describe("Pickeable Fields", async () => {
     CONFIG_STATE_PICKABLE_FIELDS_MAP.t.forEach((t) => {
       expect(screen.queryByText(t)).not.toBeInTheDocument()
     })
+  })
+})
+
+describe("Wallhaven sort picker", () => {
+  it("shows hot, top, and new in the main config and changes the active sort", async () => {
+    ConfigStore.source = "wallhaven"
+    const { user } = setup()
+
+    for (const sort of ["hot", "top", "new"]) {
+      expect(screen.getByText(sort)).toBeInTheDocument()
+    }
+
+    expect(screen.queryByText("relevance")).not.toBeInTheDocument()
+    expect(screen.getByText("top")).toHaveClass("selected")
+
+    CacheStore.data = [{
+      id: "cached",
+      title: "",
+      url: "https://w.wallhaven.cc/full/ab/wallhaven-abc123.jpg",
+    }]
+    CacheStore.lastUpdated = Date.now()
+    AppStore.loaded = LoadState.LOADED
+
+    await user.click(screen.getByText("new"))
+
+    expect(ConfigStore.wallhavenSorting).toBe("date_added")
+    expect(CacheStore.data).toEqual([])
+    expect(AppStore.loaded).toBe(LoadState.FETCH_NEW)
+    expect(screen.getByText("new")).toHaveClass("selected")
   })
 })
 

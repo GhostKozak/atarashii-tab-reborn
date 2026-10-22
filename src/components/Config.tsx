@@ -81,6 +81,41 @@ const ValuePicker = ({
   )
 }
 
+const WallhavenSortPicker = () => {
+  const config = useSnapshot(ConfigStore)
+  const options = [
+    { value: "views", label: "hot" },
+    { value: "toplist", label: "top" },
+    { value: "date_added", label: "new" },
+  ] as const
+
+  return (
+    <div className="hideable">
+      {options
+        .map(({ value, label }) =>
+          value === config.wallhavenSorting ? (
+            <a key={value} className="selected">
+              {label}
+            </a>
+          ) : (
+            <a
+              key={value}
+              onClick={() => {
+                ConfigStore.wallhavenSorting = value
+                ConfigStore.pinned = false
+                clearCache()
+                setLoaded(LoadState.FETCH_NEW)
+              }}
+            >
+              {label}
+            </a>
+          )
+        )
+        .reduce((prev, cur) => <>{prev} • {cur}</>)}
+    </div>
+  )
+}
+
 function Config() {
   const config = useSnapshot(ConfigStore)
   const [isRolling, setIsRolling] = useState(false)
@@ -136,7 +171,7 @@ function Config() {
           setLoaded(LoadState.FETCH_NEW)
         },
         isActive: config.nsfw,
-        isDisabled: config.incognito,
+        isDisabled: config.incognito || config.source === "wallhaven",
         // keyBinding: "KeyN",
       },
       {
@@ -175,6 +210,7 @@ function Config() {
       config.incognito,
       config.nsfw,
       config.pinned,
+      config.source,
       isRolling,
       reroll,
     ]
@@ -197,23 +233,31 @@ function Config() {
 
   return (
     <div className="config">
-      <ValuePicker valueKey="sort" />
-      {config.sort !== "new" && <ValuePicker valueKey="t" />}
+      {config.source === "reddit" ? (
+        <>
+          <ValuePicker valueKey="sort" />
+          {config.sort !== "new" && <ValuePicker valueKey="t" />}
+        </>
+      ) : (
+        <WallhavenSortPicker />
+      )}
 
       <span className="buttons">
-        {buttons.map((button) => (
-          <button
-            key={button.id}
-            className={
-              `button-${button.id}` + (button.isActive ? " active" : "")
-            }
-            onClick={button.action}
-            disabled={button.isDisabled}
-          >
-            {button.label ? button.label() : button.id}
-            <button.icon size={16} />
-          </button>
-        ))}
+        {buttons
+          .filter((button) => config.source === "reddit" || button.id !== "nsfw")
+          .map((button) => (
+            <button
+              key={button.id}
+              className={
+                `button-${button.id}` + (button.isActive ? " active" : "")
+              }
+              onClick={button.action}
+              disabled={button.isDisabled}
+            >
+              {button.label ? button.label() : button.id}
+              <button.icon size={16} />
+            </button>
+          ))}
       </span>
     </div>
   )

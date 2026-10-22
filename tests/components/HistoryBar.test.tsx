@@ -231,6 +231,64 @@ describe("Menu", () => {
     expect(ConfigStore.pinned).toBe(false)
   })
 
+  it("switches wallpaper source and refreshes with a source-specific query", async () => {
+    resetStores()
+    const { user } = setup()
+
+    await user.click(screen.getByRole("button", { name: /settings/i }))
+    await user.selectOptions(
+      screen.getByLabelText(/wallpaper source/i),
+      "wallhaven",
+    )
+
+    expect(ConfigStore.source).toBe("wallhaven")
+    expect(screen.getByRole("searchbox", { name: /search phrase/i })).toHaveValue("")
+    expect(AppStore.loaded).toBe(LoadState.FETCH_NEW)
+
+    await user.clear(screen.getByRole("searchbox", { name: /search phrase/i }))
+    await user.type(screen.getByRole("searchbox", { name: /search phrase/i }), "landscape")
+    await user.click(screen.getByRole("button", { name: /^search$/i }))
+
+    expect(ConfigStore.wallhavenQ).toBe("landscape")
+    expect(ConfigStore.q).toBe('flair:"Desktop"')
+  })
+
+  it("shows Wallhaven filters and saves the API key and filter values", async () => {
+    resetStores()
+    ConfigStore.wallhavenSorting = "random"
+    const { user } = setup()
+
+    await user.click(screen.getByRole("button", { name: /settings/i }))
+    await user.selectOptions(
+      screen.getByLabelText(/wallpaper source/i),
+      "wallhaven",
+    )
+
+    expect(screen.getByRole("heading", { name: "Wallhaven filters" })).toBeVisible()
+    expect(screen.getByRole("option", { name: "Wallhaven" })).toBeInTheDocument()
+    expect(screen.queryByRole("option", { name: /wallhaven · anime/i })).not.toBeInTheDocument()
+
+    await user.clear(screen.getByLabelText(/wallhaven api key/i))
+    await user.type(screen.getByLabelText(/wallhaven api key/i), "wallhaven-key")
+    await user.click(screen.getByLabelText("NSFW"))
+    await user.selectOptions(screen.getByLabelText(/minimum resolution/i), "1920x1080")
+    await user.selectOptions(screen.getByLabelText(/exact resolution/i), "1920x1200")
+    await user.selectOptions(screen.getByLabelText(/aspect ratio/i), "16x10")
+    await user.selectOptions(screen.getByLabelText(/file type/i), "png")
+    await user.selectOptions(screen.getByLabelText(/^order$/i), "asc")
+    await user.click(screen.getByRole("button", { name: /apply wallhaven filters/i }))
+
+    expect(ConfigStore.wallhavenApiKey).toBe("wallhaven-key")
+    expect(ConfigStore.wallhavenPurity.nsfw).toBe(true)
+    expect(ConfigStore.wallhavenSorting).toBe("random")
+    expect(ConfigStore.wallhavenResolution).toBe("1920x1080")
+    expect(ConfigStore.wallhavenExactResolution).toBe("1920x1200")
+    expect(ConfigStore.wallhavenRatio).toBe("16x10")
+    expect(ConfigStore.wallhavenFileType).toBe("png")
+    expect(ConfigStore.wallhavenOrder).toBe("asc")
+    expect(AppStore.loaded).toBe(LoadState.FETCH_NEW)
+  })
+
   it("saves, applies, and deletes search profiles in settings", async () => {
     resetStores()
     const { user } = setup()

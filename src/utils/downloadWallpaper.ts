@@ -40,8 +40,11 @@ const getFilename = (url: URL, title: string) => {
 
 export function downloadWallpaper(imageUrl: string, title: string) {
   const url = new URL(imageUrl)
-  if (url.protocol !== "https:" || url.hostname !== "i.redd.it") {
-    return Promise.reject(new Error("Only HTTPS i.redd.it wallpapers can be saved"))
+  if (
+    url.protocol !== "https:" ||
+    !["i.redd.it", "w.wallhaven.cc"].includes(url.hostname)
+  ) {
+    return Promise.reject(new Error("Only HTTPS Reddit or Wallhaven wallpapers can be saved"))
   }
 
   const options = {

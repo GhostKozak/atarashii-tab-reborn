@@ -64,6 +64,31 @@ describe("App", () => {
     })
   })
 
+  it("renders Wallhaven wallpapers with their source attribution", async () => {
+    ConfigStore.source = "wallhaven"
+    fetchPostsMock.mockResolvedValue([{
+      id: "abc123",
+      title: "",
+      source: "wallhaven",
+      url: "https://w.wallhaven.cc/full/ab/wallhaven-abc123.jpg",
+      link: "https://wallhaven.cc/w/abc123",
+      thumbnailUrl: "https://th.wallhaven.cc/small/ab/abc123.jpg",
+      resolution: "1920 × 1080",
+    }])
+
+    render(<App />)
+
+    expect(await screen.findByText("Wallhaven")).toHaveAttribute(
+      "href",
+      "https://wallhaven.cc",
+    )
+    expect(screen.getByText("https://wallhaven.cc/w/abc123")).toBeInTheDocument()
+    expect(screen.getByTestId("background-image")).toHaveAttribute(
+      "src",
+      "https://w.wallhaven.cc/full/ab/wallhaven-abc123.jpg",
+    )
+  })
+
   it("quick-saves the current wallpaper and records it in recent downloads", async () => {
     const download = vi.fn((_options, callback: (id: number) => void) => callback(42))
     vi.stubGlobal("chrome", { downloads: { download }, runtime: {} })

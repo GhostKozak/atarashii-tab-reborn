@@ -2,7 +2,7 @@
   "name": "atarashii-tab-reborn",
   "version": "0.1.12",
   "private": true,
-  "description": "Displays anime wallpapers from r/Animewallpaper on your new tab page",
+  "description": "Displays anime wallpapers from Reddit and Wallhaven on your new tab page",
   "homepage": "https://github.com/ghostkozak/atarashii-tab-reborn#readme",
   "bugs": {
     "url": "https://github.com/ghostkozak/atarashii-tab-reborn/issues"

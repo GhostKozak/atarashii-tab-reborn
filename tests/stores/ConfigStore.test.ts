@@ -8,6 +8,8 @@ import {
   toggle,
   toggleMenu,
   toggleNsfw,
+  updateSearchQuery,
+  updateWallpaperSource,
 } from "../../src/stores/ConfigStore"
 
 describe("ConfigStore helpers", () => {
@@ -29,6 +31,20 @@ describe("ConfigStore helpers", () => {
 
     toggleNsfw()
     expect(ConfigStore.nsfw).toBe(initial)
+  })
+
+  it("switches sources and keeps search phrases separate", () => {
+    ConfigStore.q = "reddit query"
+    updateWallpaperSource("wallhaven")
+    updateSearchQuery("wallhaven query")
+
+    expect(ConfigStore.source).toBe("wallhaven")
+    expect(ConfigStore.wallhavenQ).toBe("wallhaven query")
+    expect(ConfigStore.q).toBe("reddit query")
+
+    ConfigStore.nsfw = true
+    updateWallpaperSource("wallhaven")
+    expect(ConfigStore.nsfw).toBe(false)
   })
 
   it("pickValue updates pickable fields and sets t=all for sort=new", () => {
@@ -75,6 +91,46 @@ describe("ConfigStore helpers", () => {
     expect(removeSearchProfile(id!)).toBe(true)
     expect(ConfigStore.savedSearches).toEqual([])
     expect(applySearchProfile(id!)).toBe(false)
+  })
+
+  it("stores Wallhaven search filters in its profile without storing the API key", () => {
+    ConfigStore.source = "wallhaven"
+    ConfigStore.wallhavenQ = "city night"
+    ConfigStore.wallhavenSorting = "random"
+    ConfigStore.wallhavenOrder = "asc"
+    ConfigStore.wallhavenCategories = {
+      general: true,
+      anime: true,
+      people: false,
+    }
+    ConfigStore.wallhavenApiKey = "keep-this-out-of-profile"
+    const id = saveSearchProfile("Night scenes")
+
+    const profile = ConfigStore.savedSearches.find((item) => item.id === id)
+    expect(profile?.wallhaven).toMatchObject({
+      sorting: "random",
+      order: "asc",
+      categories: { general: true, anime: true, people: false },
+    })
+    expect(JSON.stringify(profile)).not.toContain("keep-this-out-of-profile")
+
+    ConfigStore.wallhavenSorting = "toplist"
+    ConfigStore.wallhavenOrder = "desc"
+    ConfigStore.wallhavenCategories = {
+      general: false,
+      anime: true,
+      people: false,
+    }
+    expect(applySearchProfile(id!)).toBe(true)
+    expect(ConfigStore.wallhavenQ).toBe("city night")
+    expect(ConfigStore.wallhavenSorting).toBe("random")
+    expect(ConfigStore.wallhavenOrder).toBe("asc")
+    expect(ConfigStore.wallhavenCategories).toEqual({
+      general: true,
+      anime: true,
+      people: false,
+    })
+    expect(ConfigStore.wallhavenApiKey).toBe("keep-this-out-of-profile")
   })
 
   it("forces all-time results when applying a new-sort profile", () => {

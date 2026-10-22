@@ -1,16 +1,17 @@
 import type { ConfigState } from "../stores/ConfigStore"
-import type { RedditPost } from "../stores/HistoryStore"
+import type { WallpaperPost } from "../stores/HistoryStore"
 import { fetchRssPosts } from "./fetchRss"
+import { fetchWallhavenPosts } from "./fetchWallhaven"
 
 type RedditSearchResponse = {
   data: {
     after: string | null
-    children: Array<{ data: RedditPost & { thumbnail?: string } }>
+    children: Array<{ data: WallpaperPost & { thumbnail?: string } }>
   }
 }
 
 const fetchJsonPosts = async (config: ConfigState) => {
-  let posts: Array<RedditPost & { thumbnail?: string }> = []
+  let posts: Array<WallpaperPost & { thumbnail?: string }> = []
   let after: string | null = null
   const seenCursors = new Set<string>()
 
@@ -46,7 +47,9 @@ const fetchJsonPosts = async (config: ConfigState) => {
 }
 
 export async function fetchPosts(config: ConfigState) {
-  let posts: Array<RedditPost & { thumbnail?: string }>
+  if (config.source === "wallhaven") return fetchWallhavenPosts(config)
+
+  let posts: Array<WallpaperPost & { thumbnail?: string }>
   let usedRssFallback = false
 
   try {

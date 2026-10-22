@@ -1,6 +1,6 @@
 {
   "name": "Atarashii Reborn (New) Tab Page",
-  "description": "Displays anime wallpapers from r/Animewallpaper on your new tab page",
+  "description": "Displays anime wallpapers from Reddit and Wallhaven on your new tab page",
   "version": "0.1.12",
   "manifest_version": 3,
   "browser_specific_settings": {
@@ -27,6 +27,9 @@
   "host_permissions": [
     "https://www.reddit.com/*",
     "https://i.redd.it/*",
-    "https://preview.redd.it/*"
+    "https://preview.redd.it/*",
+    "https://wallhaven.cc/*",
+    "https://w.wallhaven.cc/*",
+    "https://th.wallhaven.cc/*"
   ]
 }

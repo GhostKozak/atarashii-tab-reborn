@@ -1,6 +1,7 @@
 import { decode } from "html-entities"
 import { persist } from "valtio-persist"
 import type { ImageData } from "../types/ImageData"
+import type { WallpaperSource } from "./ConfigStore"
 
 type RedditPreviewImage = {
   url: string
@@ -8,10 +9,14 @@ type RedditPreviewImage = {
   height: number
 }
 
-export type RedditPost = {
+export type WallpaperPost = {
   id: string
   title: string
   url: string
+  source?: WallpaperSource
+  link?: string
+  thumbnailUrl?: string
+  resolution?: string
   preview?: {
     images?: Array<{
       source?: RedditPreviewImage
@@ -19,6 +24,8 @@ export type RedditPost = {
     }>
   }
 }
+
+export type RedditPost = WallpaperPost
 
 export type HistoryStore = {
   history: ImageData[]
@@ -32,6 +39,20 @@ export const { store: HistoryStore } = await persist<HistoryStore>(
   },
   "history",
 )
+
+export const migrateLegacyWallhavenTitles = () => {
+  for (const image of HistoryStore.history) {
+    if (
+      image.source === "wallhaven" &&
+      (!image.title || image.title === "Untitled Wallpaper") &&
+      image.sourceId
+    ) {
+      image.title = `Wallhaven #${image.sourceId}`
+    }
+  }
+}
+
+migrateLegacyWallhavenTitles()
 
 const pickImageUrl = (
   post: RedditPost,
@@ -75,12 +96,16 @@ export const createImageData = (
 
   return {
     title: parts.join(" • "),
-    res: resolution || "",
-    redditId: post.id,
+    res: resolution || post.resolution || "",
+    ...(post.source === "wallhaven"
+      ? { source: post.source, sourceId: post.id }
+      : { source: "reddit" as const, redditId: post.id, sourceId: post.id }),
     url: post.url,
-    backgroundUrl: pickImageUrl(post, window.innerWidth, window.innerHeight),
-    thumbnailUrl: pickImageUrl(post, 192, 108),
-    link: `https://redd.it/${post.id}`,
+    backgroundUrl: post.source === "wallhaven"
+      ? post.url
+      : pickImageUrl(post, window.innerWidth, window.innerHeight),
+    thumbnailUrl: post.thumbnailUrl || pickImageUrl(post, 192, 108),
+    link: post.link || `https://redd.it/${post.id}`,
     nums: [index, total],
   }
 }

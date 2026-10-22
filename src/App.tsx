@@ -22,7 +22,7 @@ import { ConfigStore } from "./stores/ConfigStore"
 import {
   HistoryStore,
   pushPostToHistory,
-  type RedditPost,
+  type WallpaperPost,
 } from "./stores/HistoryStore"
 import { fetchPosts } from "./utils/fetchPosts"
 import { RECENT_WALLPAPER_LIMIT, selectWallpaper } from "./utils/selectWallpaper"
@@ -82,7 +82,7 @@ function App() {
     let ignore = false
 
     async function run() {
-      let posts: RedditPost[]
+      let posts: WallpaperPost[]
       setFetchError(null)
 
       // Cache for 24 hours
@@ -90,7 +90,7 @@ function App() {
         cache.lastUpdated === -1 ||
         Date.now() - cache.lastUpdated >= 1000 * 60 * 60 * 24
       ) {
-        console.log("[i] Fetching w/ config:", config)
+        console.log("[i] Fetching wallpapers from:", config.source)
         posts = await fetchPosts(config)
 
         if (!ignore) {
@@ -99,7 +99,7 @@ function App() {
         }
       } else {
         console.log("[i] Using cached posts")
-        posts = cache.data as RedditPost[]
+        posts = cache.data as WallpaperPost[]
       }
 
       if (!posts.length || ignore) {
@@ -109,8 +109,14 @@ function App() {
 
       const recentIds = new Set(
         HistoryStore.history
+          .filter(({ source: historySource }) =>
+            (historySource ?? "reddit") === config.source
+          )
           .slice(-RECENT_WALLPAPER_LIMIT)
-          .flatMap(({ redditId }) => redditId ? [redditId] : []),
+          .flatMap(({ sourceId, redditId }) => {
+            const id = sourceId ?? redditId
+            return id ? [id] : []
+          }),
       )
       const post = selectWallpaper(posts, recentIds)
       if (!post) {
@@ -128,8 +134,12 @@ function App() {
     void run().catch((error: unknown) => {
       if (ignore) return
 
-      console.error("[!] Failed to load Reddit posts:", error)
-      setFetchError("Could not load wallpapers from Reddit. Check your connection and try again.")
+      console.error(`[!] Failed to load ${config.source} wallpapers:`, error)
+      setFetchError(
+        config.source === "wallhaven"
+          ? `Could not load wallpapers from Wallhaven: ${error instanceof Error ? error.message : "Check your connection and try again."}`
+          : "Could not load wallpapers from Reddit. Check your connection and try again.",
+      )
       setLoaded(LoadState.LOADED)
     })
 
@@ -189,9 +199,15 @@ function App() {
                 ) : (
                   <>
                     Image from{" "}
-                    <a href="https://reddit.com/r/animewallpaper">
-                      <FaReddit size={20} /> r/Animewallpaper
-                    </a>
+                    {data?.source === "wallhaven" ? (
+                      <a href="https://wallhaven.cc">
+                        Wallhaven
+                      </a>
+                    ) : (
+                      <a href="https://reddit.com/r/animewallpaper">
+                        <FaReddit size={20} /> r/Animewallpaper
+                      </a>
+                    )}
                   </>
                 )}
               </p>
@@ -212,7 +228,7 @@ function App() {
                     </button>
                   </>
                 ) : data === null ? (
-                  <>Try different filters! • Reddit down perhaps?</>
+                  <>Try different filters! • {config.source === "wallhaven" ? "Wallhaven" : "Reddit"} may be unavailable.</>
                 ) : (
                   <>
                     Post <strong>#{(data?.nums[0] || 0) + 1}</strong> of{" "}

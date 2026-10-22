@@ -6,6 +6,15 @@ import packageJson from "./package.json";
 
 // https://vite.dev/config/
 export default defineConfig({
+  server: {
+    proxy: {
+      "/api/wallhaven": {
+        target: "https://wallhaven.cc",
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/wallhaven/, "/api/v1"),
+      },
+    },
+  },
   fmt: {},
   lint: {
     plugins: ["oxc", "typescript", "unicorn"],

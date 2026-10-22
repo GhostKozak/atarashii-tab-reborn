@@ -4,6 +4,7 @@ import {
   createImageData,
   HistoryStore,
   importFavorites,
+  migrateLegacyWallhavenTitles,
   pushPostToHistory,
   removeHistoryAt,
   toggleFavoriteAt,
@@ -67,6 +68,57 @@ describe("HistoryStore", () => {
       "https://redd.it/two",
     ])
     expect(HistoryStore.i).toBe(1)
+  })
+
+  it("creates history data from a Wallhaven wallpaper", () => {
+    const data = createImageData({
+      id: "abc123",
+      title: "",
+      source: "wallhaven",
+      url: "https://w.wallhaven.cc/full/ab/wallhaven-abc123.jpg",
+      link: "https://wallhaven.cc/w/abc123",
+      thumbnailUrl: "https://th.wallhaven.cc/small/ab/abc123.jpg",
+      resolution: "1920 × 1080",
+    }, 0, 1)
+
+    expect(data).toMatchObject({
+      source: "wallhaven",
+      sourceId: "abc123",
+      url: "https://w.wallhaven.cc/full/ab/wallhaven-abc123.jpg",
+      backgroundUrl: "https://w.wallhaven.cc/full/ab/wallhaven-abc123.jpg",
+      thumbnailUrl: "https://th.wallhaven.cc/small/ab/abc123.jpg",
+      link: "https://wallhaven.cc/w/abc123",
+      res: "1920 × 1080",
+    })
+    expect(data.redditId).toBeUndefined()
+  })
+
+  it("migrates untitled legacy Wallhaven history entries", () => {
+    HistoryStore.history = [
+      makeImageData({
+        source: "wallhaven",
+        sourceId: "abc123",
+        title: "",
+      }),
+      makeImageData({
+        source: "wallhaven",
+        sourceId: "def456",
+        title: "Existing title",
+      }),
+      makeImageData({
+        source: "reddit",
+        sourceId: "ghi789",
+        title: "",
+      }),
+    ]
+
+    migrateLegacyWallhavenTitles()
+
+    expect(HistoryStore.history.map(({ title }) => title)).toEqual([
+      "Wallhaven #abc123",
+      "Existing title",
+      "",
+    ])
   })
 
   it("keeps favorites when clearing and updates the current index", () => {

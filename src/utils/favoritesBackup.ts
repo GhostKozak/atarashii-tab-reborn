@@ -23,16 +23,24 @@ const isImageData = (value: unknown): value is ImageData => {
   return (
     typeof image.title === "string" &&
     typeof image.res === "string" &&
-    isHttpUrl(image.url, ["i.redd.it"]) &&
-    isHttpUrl(image.link, ["redd.it"]) &&
+    isHttpUrl(image.url, ["i.redd.it", "w.wallhaven.cc"]) &&
+    isHttpUrl(image.link, ["redd.it", "wallhaven.cc"]) &&
     Array.isArray(image.nums) &&
     image.nums.length === 2 &&
     image.nums.every((number) => Number.isInteger(number) && number >= 0) &&
     image.favorite === true &&
     (image.backgroundUrl === undefined ||
-      isHttpUrl(image.backgroundUrl, ["i.redd.it", "preview.redd.it"])) &&
+      isHttpUrl(image.backgroundUrl, [
+        "i.redd.it",
+        "preview.redd.it",
+        "w.wallhaven.cc",
+      ])) &&
     (image.thumbnailUrl === undefined ||
-      isHttpUrl(image.thumbnailUrl, ["i.redd.it", "preview.redd.it"]))
+      isHttpUrl(image.thumbnailUrl, [
+        "i.redd.it",
+        "preview.redd.it",
+        "th.wallhaven.cc",
+      ]))
   )
 }
 

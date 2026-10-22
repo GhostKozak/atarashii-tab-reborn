@@ -23,11 +23,14 @@ import {
 import {
   ConfigStore,
   PRIMARY_COLOR_PRESETS,
+  WALLHAVEN_COLOR_OPTIONS,
+  WALLHAVEN_TOP_RANGE_OPTIONS,
   applySearchProfile,
   removeSearchProfile,
   saveSearchProfile,
   unpinWallpaper,
   updateSearchQuery,
+  updateWallpaperSource,
 } from "../stores/ConfigStore"
 import { useSnapshot } from "valtio"
 import {
@@ -168,11 +171,32 @@ function MenuCard({
 export default function Menu () {
   const { history, i: historyIndex } = useSnapshot(HistoryStore)
   const { recent: recentDownloads } = useSnapshot(DownloadsStore)
-  const { pinned, isMenuVisible, theme, settings, q, savedSearches } =
-    useSnapshot(ConfigStore)
+  const {
+    pinned,
+    isMenuVisible,
+    theme,
+    settings,
+    q,
+    wallhavenQ,
+    source,
+    savedSearches,
+    wallhavenCategories,
+    wallhavenPurity,
+    wallhavenSorting,
+    wallhavenOrder,
+    wallhavenTopRange,
+    wallhavenResolution,
+    wallhavenExactResolution,
+    wallhavenRatio,
+    wallhavenColor,
+    wallhavenFileType,
+    wallhavenApiKey,
+  } = useSnapshot(ConfigStore)
   const [activeTab, setActiveTab] = useState<MenuTab>("history")
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false)
-  const [searchQuery, setSearchQuery] = useState(q)
+  const [searchQuery, setSearchQuery] = useState(
+    source === "wallhaven" ? wallhavenQ : q,
+  )
   const [profileName, setProfileName] = useState("")
   const [selectedProfileId, setSelectedProfileId] = useState("")
   const [backupMessage, setBackupMessage] = useState("")
@@ -213,8 +237,16 @@ export default function Menu () {
   const applySearchQuery = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     const nextQuery = searchQuery.trim()
-    if (nextQuery === ConfigStore.q) return
+    const currentQuery = source === "wallhaven" ? wallhavenQ : q
+    if (nextQuery === currentQuery) return
     updateSearchQuery(nextQuery)
+    clearCache()
+    setLoaded(LoadState.FETCH_NEW)
+  }
+
+  const applyWallhavenSettings = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    ConfigStore.pinned = false
     clearCache()
     setLoaded(LoadState.FETCH_NEW)
   }
@@ -400,8 +432,30 @@ export default function Menu () {
             <section className="settings-section">
               <div className="settings-header">
                 <h2>Search Wallpapers</h2>
-                <p>Search titles or use Reddit search syntax.</p>
+                <p>Choose a source, then search its available wallpapers.</p>
               </div>
+
+              <label
+                className="search-query-form source-select-form"
+                htmlFor="wallpaper-source"
+              >
+                Wallpaper source
+                <select
+                  id="wallpaper-source"
+                  className="source-select"
+                  value={source}
+                  onChange={(event) => {
+                    const nextSource = event.currentTarget.value as typeof source
+                    updateWallpaperSource(nextSource)
+                    setSearchQuery(nextSource === "wallhaven" ? wallhavenQ : q)
+                    clearCache()
+                    setLoaded(LoadState.FETCH_NEW)
+                  }}
+                >
+                  <option value="reddit">Reddit</option>
+                  <option value="wallhaven">Wallhaven</option>
+                </select>
+              </label>
 
               <form className="search-query-form" onSubmit={applySearchQuery}>
                 <label htmlFor="wallpaper-search-query">Search phrase</label>
@@ -411,15 +465,226 @@ export default function Menu () {
                     type="search"
                     value={searchQuery}
                     onChange={(event) => setSearchQuery(event.currentTarget.value)}
-                    placeholder='flair:"Desktop"'
+                    placeholder={source === "wallhaven" ? "Tags, e.g. landscape" : 'flair:"Desktop"'}
                   />
                   <button type="submit">Search</button>
                 </div>
                 <p className="search-query-note">
-                  If Reddit&apos;s JSON API is unavailable, the RSS fallback
-                  provides up to 25 results instead of 200.
+                  {source === "wallhaven"
+                    ? "Search Wallhaven tags. Filters and your API key are saved in this browser."
+                    : "Search titles or use Reddit search syntax. If Reddit's JSON API is unavailable, its RSS fallback provides up to 25 results."}
                 </p>
               </form>
+
+              {source === "wallhaven" && (
+                <section
+                  className="settings-section wallhaven-settings"
+                  aria-label="Wallhaven settings"
+                >
+                  <div className="settings-header">
+                    <h3>Wallhaven filters</h3>
+                    <p>Fine-tune categories, content ratings and image filters.</p>
+                  </div>
+
+                  <form className="wallhaven-filter-form" onSubmit={applyWallhavenSettings}>
+                    <fieldset>
+                      <legend>Categories</legend>
+                      {(["general", "anime", "people"] as const).map((category) => (
+                        <label key={category}>
+                          <input
+                            type="checkbox"
+                            checked={wallhavenCategories[category]}
+                            onChange={(event) => {
+                              ConfigStore.wallhavenCategories[category] =
+                                event.currentTarget.checked
+                            }}
+                          />
+                          {category === "general"
+                            ? "General"
+                            : category === "anime"
+                              ? "Anime"
+                              : "People"}
+                        </label>
+                      ))}
+                    </fieldset>
+
+                    <fieldset>
+                      <legend>Content rating</legend>
+                      {(["sfw", "sketchy", "nsfw"] as const).map((rating) => (
+                        <label key={rating}>
+                          <input
+                            type="checkbox"
+                            checked={wallhavenPurity[rating]}
+                            onChange={(event) => {
+                              ConfigStore.wallhavenPurity[rating] =
+                                event.currentTarget.checked
+                            }}
+                          />
+                          {rating.toUpperCase()}
+                        </label>
+                      ))}
+                    </fieldset>
+
+                    {wallhavenSorting === "toplist" && (
+                      <div className="wallhaven-filter-field">
+                        <label htmlFor="wallhaven-top-range">Toplist period</label>
+                        <select
+                          id="wallhaven-top-range"
+                          value={wallhavenTopRange}
+                          onChange={(event) => {
+                            ConfigStore.wallhavenTopRange =
+                              event.currentTarget.value as typeof wallhavenTopRange
+                          }}
+                        >
+                          {WALLHAVEN_TOP_RANGE_OPTIONS.map((range) => (
+                            <option key={range} value={range}>{range}</option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+
+                    <div className="wallhaven-filter-field">
+                      <label htmlFor="wallhaven-advanced-sort">Other sort options</label>
+                      <select
+                        id="wallhaven-advanced-sort"
+                        value={
+                          ["relevance", "random", "favorites"].includes(wallhavenSorting)
+                            ? wallhavenSorting
+                            : ""
+                        }
+                        onChange={(event) => {
+                          if (event.currentTarget.value) {
+                            ConfigStore.wallhavenSorting =
+                              event.currentTarget.value as typeof wallhavenSorting
+                            ConfigStore.pinned = false
+                            clearCache()
+                            setLoaded(LoadState.FETCH_NEW)
+                          }
+                        }}
+                      >
+                        <option value="">Use hot / top / new controls above</option>
+                        <option value="relevance">Relevance</option>
+                        <option value="random">Random</option>
+                        <option value="favorites">Favorites</option>
+                      </select>
+                    </div>
+
+                    <div className="wallhaven-filter-field">
+                      <label htmlFor="wallhaven-order">Order</label>
+                      <select
+                        id="wallhaven-order"
+                        value={wallhavenOrder}
+                        onChange={(event) => {
+                          ConfigStore.wallhavenOrder =
+                            event.currentTarget.value as typeof wallhavenOrder
+                        }}
+                      >
+                        <option value="desc">Descending</option>
+                        <option value="asc">Ascending</option>
+                      </select>
+                    </div>
+
+                    <div className="wallhaven-filter-field">
+                      <label htmlFor="wallhaven-resolution">Minimum resolution</label>
+                      <select
+                        id="wallhaven-resolution"
+                        value={wallhavenResolution}
+                        onChange={(event) => {
+                          ConfigStore.wallhavenResolution = event.currentTarget.value
+                        }}
+                      >
+                        <option value="">Any</option>
+                        <option value="1920x1080">1920 × 1080</option>
+                        <option value="1920x1200">1920 × 1200</option>
+                        <option value="1920x1080,1920x1200">Either resolution</option>
+                      </select>
+                    </div>
+
+                    <div className="wallhaven-filter-field">
+                      <label htmlFor="wallhaven-ratio">Aspect ratio</label>
+                      <select
+                        id="wallhaven-ratio"
+                        value={wallhavenRatio}
+                        onChange={(event) => {
+                          ConfigStore.wallhavenRatio = event.currentTarget.value
+                        }}
+                      >
+                        <option value="">Any</option>
+                        <option value="16x9">16:9</option>
+                        <option value="16x10">16:10</option>
+                      </select>
+                    </div>
+
+                    <div className="wallhaven-filter-field">
+                      <label htmlFor="wallhaven-exact-resolution">Exact resolution</label>
+                      <select
+                        id="wallhaven-exact-resolution"
+                        value={wallhavenExactResolution}
+                        onChange={(event) => {
+                          ConfigStore.wallhavenExactResolution = event.currentTarget.value
+                        }}
+                      >
+                        <option value="">Any</option>
+                        <option value="1920x1080">1920 × 1080</option>
+                        <option value="1920x1200">1920 × 1200</option>
+                      </select>
+                    </div>
+
+                    <div className="wallhaven-filter-field">
+                      <label htmlFor="wallhaven-file-type">File type</label>
+                      <select
+                        id="wallhaven-file-type"
+                        value={wallhavenFileType}
+                        onChange={(event) => {
+                          ConfigStore.wallhavenFileType =
+                            event.currentTarget.value as typeof wallhavenFileType
+                        }}
+                      >
+                        <option value="">Any</option>
+                        <option value="jpg">JPG</option>
+                        <option value="png">PNG</option>
+                      </select>
+                    </div>
+
+                    <div className="wallhaven-filter-field">
+                      <label htmlFor="wallhaven-color">Dominant color</label>
+                      <select
+                        id="wallhaven-color"
+                        value={wallhavenColor}
+                        onChange={(event) => {
+                          ConfigStore.wallhavenColor = event.currentTarget.value
+                        }}
+                      >
+                        <option value="">Any</option>
+                        {WALLHAVEN_COLOR_OPTIONS.map(([color, label]) => (
+                          <option key={color} value={color}>{label}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="wallhaven-filter-field wallhaven-api-key">
+                      <label htmlFor="wallhaven-api-key">Wallhaven API key</label>
+                      <input
+                        id="wallhaven-api-key"
+                        type="password"
+                        autoComplete="off"
+                        value={wallhavenApiKey}
+                        onChange={(event) => {
+                          ConfigStore.wallhavenApiKey = event.currentTarget.value
+                        }}
+                      />
+                    </div>
+                    <p className="search-query-note">
+                      An API key is required for NSFW results. The key is stored locally and sent to Wallhaven when searching.{" "}
+                      <a href="https://wallhaven.cc/settings/account" target="_blank" rel="noreferrer">
+                        Get an API key
+                      </a>
+                    </p>
+
+                    <button type="submit">Apply Wallhaven filters</button>
+                  </form>
+                </section>
+              )}
 
               <form className="search-query-form" onSubmit={saveCurrentProfile}>
                 <label htmlFor="search-profile-name">Save current search</label>

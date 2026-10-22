@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vite-plus/test"
 import { downloadWallpaper } from "../../src/utils/downloadWallpaper"
 
 describe("downloadWallpaper", () => {
-  it("downloads an i.redd.it image with a safe filename", async () => {
+  it("downloads a Reddit image with a safe filename", async () => {
     const download = vi.fn((_options, callback: (id: number) => void) => callback(7))
     vi.stubGlobal("chrome", { downloads: { download }, runtime: {} })
 
@@ -17,6 +17,23 @@ describe("downloadWallpaper", () => {
         filename: "Wallpapers/A B Wallpaper.webp",
         saveAs: true,
       },
+      expect.any(Function),
+    )
+  })
+
+  it("downloads a Wallhaven image", async () => {
+    const download = vi.fn((_options, callback: (id: number) => void) => callback(8))
+    vi.stubGlobal("chrome", { downloads: { download }, runtime: {} })
+
+    await expect(
+      downloadWallpaper("https://w.wallhaven.cc/full/ab/wallhaven-abc123.jpg", "Anime"),
+    ).resolves.toBe(8)
+
+    expect(download).toHaveBeenCalledWith(
+      expect.objectContaining({
+        url: "https://w.wallhaven.cc/full/ab/wallhaven-abc123.jpg",
+        filename: "Wallpapers/Anime.jpg",
+      }),
       expect.any(Function),
     )
   })
@@ -39,7 +56,7 @@ describe("downloadWallpaper", () => {
   it("rejects unsupported image hosts", async () => {
     await expect(
       downloadWallpaper("https://example.com/wallpaper.jpg", "Wallpaper"),
-    ).rejects.toThrow("Only HTTPS i.redd.it wallpapers can be saved")
+    ).rejects.toThrow("Only HTTPS Reddit or Wallhaven wallpapers can be saved")
   })
 
   it("reports browser download API errors", async () => {

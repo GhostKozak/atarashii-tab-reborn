@@ -14,8 +14,21 @@ export function resetStores() {
   CacheStore.data = []
 
   Object.assign(ConfigStore, {
+    source: "reddit",
     num: undefined,
     q: `flair:"Desktop"`,
+    wallhavenQ: "",
+    wallhavenApiKey: "",
+    wallhavenCategories: { general: false, anime: true, people: false },
+    wallhavenPurity: { sfw: true, sketchy: false, nsfw: false },
+    wallhavenSorting: "toplist",
+    wallhavenOrder: "desc",
+    wallhavenTopRange: "1M",
+    wallhavenResolution: "",
+    wallhavenExactResolution: "",
+    wallhavenRatio: "",
+    wallhavenColor: "",
+    wallhavenFileType: "",
     sort: "top",
     t: "year",
     savedSearches: [],
