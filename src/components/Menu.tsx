@@ -19,6 +19,9 @@ import {
 import {
   ConfigStore,
   PRIMARY_COLOR_PRESETS,
+  applySearchProfile,
+  removeSearchProfile,
+  saveSearchProfile,
   unpinWallpaper,
   updateSearchQuery,
 } from "../stores/ConfigStore"
@@ -156,10 +159,13 @@ function MenuCard({
 
 export default function Menu () {
   const { history, i: historyIndex } = useSnapshot(HistoryStore)
-  const { pinned, isMenuVisible, theme, settings, q } = useSnapshot(ConfigStore)
+  const { pinned, isMenuVisible, theme, settings, q, savedSearches } =
+    useSnapshot(ConfigStore)
   const [activeTab, setActiveTab] = useState<MenuTab>("history")
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false)
   const [searchQuery, setSearchQuery] = useState(q)
+  const [profileName, setProfileName] = useState("")
+  const [selectedProfileId, setSelectedProfileId] = useState("")
   const previousHistoryLength = useRef(history.length)
   const [enteringIndex, setEnteringIndex] = useState<number | null>(null)
   const primaryColor = theme.primary
@@ -201,6 +207,33 @@ export default function Menu () {
     updateSearchQuery(nextQuery)
     clearCache()
     setLoaded(LoadState.FETCH_NEW)
+  }
+
+  const saveCurrentProfile = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    const profileId = saveSearchProfile(profileName)
+    if (!profileId) return
+
+    setSelectedProfileId(profileId)
+    setProfileName("")
+  }
+
+  const selectProfile = (profileId: string) => {
+    if (!profileId || !applySearchProfile(profileId)) return
+
+    const profile = ConfigStore.savedSearches.find(({ id }) => id === profileId)
+    if (!profile) return
+
+    setSearchQuery(profile.q)
+    clearCache()
+    setLoaded(LoadState.FETCH_NEW)
+  }
+
+  const deleteSelectedProfile = () => {
+    if (!selectedProfileId) return
+
+    removeSearchProfile(selectedProfileId)
+    setSelectedProfileId("")
   }
 
   return (
@@ -297,6 +330,47 @@ export default function Menu () {
                   provides up to 25 results instead of 200.
                 </p>
               </form>
+
+              <form className="search-query-form" onSubmit={saveCurrentProfile}>
+                <label htmlFor="search-profile-name">Save current search</label>
+                <div className="search-query-controls">
+                  <input
+                    id="search-profile-name"
+                    type="text"
+                    value={profileName}
+                    onChange={(event) => setProfileName(event.currentTarget.value)}
+                    placeholder="Profile name"
+                    maxLength={40}
+                  />
+                  <button type="submit" disabled={!profileName.trim()}>
+                    Save
+                  </button>
+                </div>
+              </form>
+
+              <label className="search-query-form" htmlFor="saved-search-profiles">
+                Saved searches
+                <select
+                  id="saved-search-profiles"
+                  value={selectedProfileId}
+                  onChange={(event) => {
+                    setSelectedProfileId(event.currentTarget.value)
+                    selectProfile(event.currentTarget.value)
+                  }}
+                >
+                  <option value="">Choose a profile</option>
+                  {savedSearches.map(({ id, name }) => (
+                    <option key={id} value={id}>{name}</option>
+                  ))}
+                </select>
+              </label>
+              <button
+                type="button"
+                onClick={deleteSelectedProfile}
+                disabled={!selectedProfileId}
+              >
+                Delete selected profile
+              </button>
             </section>
 
             <section className="settings-section">

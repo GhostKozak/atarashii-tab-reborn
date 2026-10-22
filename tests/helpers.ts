@@ -17,6 +17,7 @@ export function resetStores() {
     q: `flair:"Desktop"`,
     sort: "top",
     t: "year",
+    savedSearches: [],
     nsfw: false,
     incognito: false,
     hideGui: false,

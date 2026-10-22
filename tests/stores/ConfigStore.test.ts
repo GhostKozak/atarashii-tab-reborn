@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vite-plus/test"
 import {
   ConfigStore,
+  applySearchProfile,
   pickValue,
+  removeSearchProfile,
+  saveSearchProfile,
   toggle,
   toggleMenu,
   toggleNsfw,
@@ -45,5 +48,48 @@ describe("ConfigStore helpers", () => {
 
     toggleMenu()
     expect(ConfigStore.isMenuVisible).toBe(initial)
+  })
+
+  it("saves, applies, and removes named search profiles", () => {
+    ConfigStore.q = "cyberpunk"
+    ConfigStore.sort = "top"
+    ConfigStore.t = "month"
+    ConfigStore.nsfw = true
+    const id = saveSearchProfile("  Cyberpunk  ")
+
+    expect(id).toBe("cyberpunk")
+    expect(saveSearchProfile("CYBERPUNK")).toBeNull()
+
+    ConfigStore.q = "changed"
+    ConfigStore.sort = "hot"
+    ConfigStore.t = "day"
+    ConfigStore.nsfw = false
+
+    expect(applySearchProfile(id!)).toBe(true)
+    expect(ConfigStore).toMatchObject({
+      q: "cyberpunk",
+      sort: "top",
+      t: "month",
+      nsfw: true,
+    })
+    expect(removeSearchProfile(id!)).toBe(true)
+    expect(ConfigStore.savedSearches).toEqual([])
+    expect(applySearchProfile(id!)).toBe(false)
+  })
+
+  it("forces all-time results when applying a new-sort profile", () => {
+    ConfigStore.savedSearches = [{
+      id: "newest",
+      name: "Newest",
+      q: "wallpaper",
+      sort: "new",
+      t: "year",
+      nsfw: false,
+    }]
+
+    applySearchProfile("newest")
+
+    expect(ConfigStore.sort).toBe("new")
+    expect(ConfigStore.t).toBe("all")
   })
 })

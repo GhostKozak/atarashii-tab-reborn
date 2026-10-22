@@ -20,11 +20,21 @@ export const CONFIG_STATE_TOGGLEABLE_FIELDS = [
   "pinned",
 ] as const
 
+export type SavedSearchProfile = {
+  id: string
+  name: string
+  q: string
+  sort: ConfigState["sort"]
+  t: ConfigState["t"]
+  nsfw: boolean
+}
+
 export type ConfigState = {
   num?: number
   q: string
   sort: (typeof CONFIG_STATE_PICKABLE_FIELDS_MAP.sort)[number]
   t: (typeof CONFIG_STATE_PICKABLE_FIELDS_MAP.t)[number]
+  savedSearches: readonly SavedSearchProfile[]
 
   nsfw: boolean
   incognito: boolean
@@ -58,6 +68,7 @@ export const { store: ConfigStore } = await persist<ConfigState>(
     q: `flair:"Desktop"`,
     sort: "top",
     t: "year",
+    savedSearches: [],
 
     nsfw: false,
     incognito: false,
@@ -103,6 +114,47 @@ export const toggleNsfw = () => {
 export const updateSearchQuery = (query: string) => {
   ConfigStore.q = query
   ConfigStore.pinned = false
+}
+
+export const saveSearchProfile = (name: string) => {
+  const normalizedName = name.trim()
+  if (!normalizedName) return null
+
+  const duplicate = ConfigStore.savedSearches.some(
+    (profile) => profile.name.toLocaleLowerCase() === normalizedName.toLocaleLowerCase(),
+  )
+  if (duplicate) return null
+
+  const id = normalizedName.toLocaleLowerCase()
+  ConfigStore.savedSearches = [...ConfigStore.savedSearches, {
+    id,
+    name: normalizedName,
+    q: ConfigStore.q,
+    sort: ConfigStore.sort,
+    t: ConfigStore.t,
+    nsfw: ConfigStore.nsfw,
+  }]
+  return id
+}
+
+export const applySearchProfile = (id: string) => {
+  const profile = ConfigStore.savedSearches.find((entry) => entry.id === id)
+  if (!profile) return false
+
+  ConfigStore.q = profile.q
+  ConfigStore.sort = profile.sort
+  ConfigStore.t = profile.sort === "new" ? "all" : profile.t
+  ConfigStore.nsfw = profile.nsfw
+  ConfigStore.pinned = false
+  return true
+}
+
+export const removeSearchProfile = (id: string) => {
+  const nextProfiles = ConfigStore.savedSearches.filter((profile) => profile.id !== id)
+  if (nextProfiles.length === ConfigStore.savedSearches.length) return false
+
+  ConfigStore.savedSearches = nextProfiles
+  return true
 }
 
 export const unpinWallpaper = () => {

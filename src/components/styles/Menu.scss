@@ -397,7 +397,8 @@
     display: flex;
     gap: 8px;
 
-    input {
+    input,
+    select {
       flex: 1;
       min-width: 0;
       border: 1px solid rgba(white, 0.24);
@@ -405,6 +406,10 @@
       background: rgba(black, 0.25);
       color: white;
       padding: 9px 10px;
+    }
+
+    select option {
+      color: black;
     }
 
     button {

@@ -209,6 +209,36 @@ describe("Menu", () => {
     expect(ConfigStore.pinned).toBe(false)
   })
 
+  it("saves, applies, and deletes search profiles in settings", async () => {
+    resetStores()
+    const { user } = setup()
+
+    await user.click(screen.getByRole("button", { name: /settings/i }))
+    const queryInput = screen.getByRole("searchbox", { name: /search phrase/i })
+    await user.clear(queryInput)
+    await user.type(queryInput, "cyberpunk")
+    await user.click(screen.getByRole("button", { name: /^search$/i }))
+    await user.type(screen.getByLabelText(/save current search/i), "Cyberpunk")
+    await user.click(screen.getByRole("button", { name: /^save$/i }))
+
+    expect(ConfigStore.savedSearches).toHaveLength(1)
+
+    await user.clear(queryInput)
+    await user.type(queryInput, "other")
+    await user.click(screen.getByRole("button", { name: /^search$/i }))
+    await user.selectOptions(
+      screen.getByLabelText(/saved searches/i),
+      "cyberpunk",
+    )
+
+    expect(ConfigStore.q).toBe("cyberpunk")
+    expect(queryInput).toHaveValue("cyberpunk")
+    await user.click(
+      screen.getByRole("button", { name: /delete selected profile/i }),
+    )
+    expect(ConfigStore.savedSearches).toEqual([])
+  })
+
   it("downloads a history wallpaper without selecting its card", async () => {
     resetStores()
     HistoryStore.history = [makeImageData({ title: "Wallpaper" })]
