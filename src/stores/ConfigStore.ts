@@ -100,6 +100,11 @@ export const toggleNsfw = () => {
   ConfigStore.nsfw = !ConfigStore.nsfw
 }
 
+export const updateSearchQuery = (query: string) => {
+  ConfigStore.q = query
+  ConfigStore.pinned = false
+}
+
 export const pickValue = <K extends keyof ConfigStatePickableFields>(
   key: K,
   value: ConfigState[K]

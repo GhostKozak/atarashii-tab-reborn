@@ -1,2 +1,0 @@
-- Search for phrase
-- Save wallpapers

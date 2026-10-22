@@ -1,0 +1,41 @@
+import { describe, expect, it, vi } from "vitest"
+import { downloadWallpaper } from "../../src/utils/downloadWallpaper"
+
+describe("downloadWallpaper", () => {
+  it("downloads an i.redd.it image with a safe filename", async () => {
+    const download = vi.fn((_options, callback: (id: number) => void) => callback(7))
+    vi.stubGlobal("chrome", { downloads: { download }, runtime: {} })
+
+    await downloadWallpaper(
+      "https://i.redd.it/wallpaper.webp?width=1920",
+      'A/B: "Wallpaper"',
+    )
+
+    expect(download).toHaveBeenCalledWith(
+      {
+        url: "https://i.redd.it/wallpaper.webp?width=1920",
+        filename: "Wallpapers/A B Wallpaper.webp",
+        saveAs: true,
+      },
+      expect.any(Function),
+    )
+  })
+
+  it("rejects unsupported image hosts", async () => {
+    await expect(
+      downloadWallpaper("https://example.com/wallpaper.jpg", "Wallpaper"),
+    ).rejects.toThrow("Only HTTPS i.redd.it wallpapers can be saved")
+  })
+
+  it("reports browser download API errors", async () => {
+    const download = vi.fn((_options, callback: (id: number) => void) => callback(3))
+    vi.stubGlobal("chrome", {
+      downloads: { download },
+      runtime: { lastError: { message: "Permission denied" } },
+    })
+
+    await expect(
+      downloadWallpaper("https://i.redd.it/wallpaper.jpg", "Wallpaper"),
+    ).rejects.toThrow("Permission denied")
+  })
+})

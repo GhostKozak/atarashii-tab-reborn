@@ -1,14 +1,26 @@
 import "./styles/Menu.scss"
-import { type CSSProperties, useEffect, useRef, useState } from "react"
+import {
+  type CSSProperties,
+  type FormEvent,
+  type MouseEvent,
+  useEffect,
+  useRef,
+  useState,
+} from "react"
 import {
   FaCog,
+  FaDownload,
   FaEyeDropper,
   FaHistory,
   FaStar,
   FaThumbtack,
   FaTrash,
 } from "react-icons/fa"
-import { ConfigStore, PRIMARY_COLOR_PRESETS } from "../stores/ConfigStore"
+import {
+  ConfigStore,
+  PRIMARY_COLOR_PRESETS,
+  updateSearchQuery,
+} from "../stores/ConfigStore"
 import { useSnapshot } from "valtio"
 import {
   clearHistory,
@@ -17,6 +29,8 @@ import {
   toggleFavoriteAt,
 } from "../stores/HistoryStore"
 import { LoadState, setLoaded } from "../stores/AppStore"
+import { clearCache } from "../stores/CacheStore"
+import { downloadWallpaper } from "../utils/downloadWallpaper"
 
 type MenuTab = "history" | "settings"
 
@@ -41,6 +55,21 @@ function MenuCard({
   onFavorite,
   onRemove,
 }: MenuCardProps) {
+  const [downloadMessage, setDownloadMessage] = useState("")
+
+  const saveWallpaper = async (event: MouseEvent<HTMLButtonElement>) => {
+    event.stopPropagation()
+    setDownloadMessage("Downloading wallpaper…")
+
+    try {
+      await downloadWallpaper(data.url, data.title)
+      setDownloadMessage("Wallpaper saved.")
+    } catch (error) {
+      console.error("[!] Failed to download wallpaper:", error)
+      setDownloadMessage("Download failed. Check the browser permissions and try again.")
+    }
+  }
+
   return (
     <div
       data-index={index}
@@ -84,6 +113,15 @@ function MenuCard({
       <div className="card-actions">
         <button
           type="button"
+          className="card-action-button card-download-button"
+          aria-label={`Save ${data.title || "wallpaper"}`}
+          onClick={saveWallpaper}
+        >
+          <FaDownload size={13} />
+        </button>
+
+        <button
+          type="button"
           className={`card-action-button card-favorite-button ${data.favorite ? "active" : ""}`}
           aria-label={`${data.favorite ? "Remove" : "Add"} ${data.title || "wallpaper"} ${data.favorite ? "from" : "to"} favorites`}
           onClick={(event) => {
@@ -106,15 +144,21 @@ function MenuCard({
           <FaTrash size={13} />
         </button>
       </div>
+      {downloadMessage && (
+        <span className="download-feedback" role="status">
+          {downloadMessage}
+        </span>
+      )}
     </div>
   )
 }
 
 export default function Menu () {
   const { history, i: historyIndex } = useSnapshot(HistoryStore)
-  const { pinned, isMenuVisible, theme, settings } = useSnapshot(ConfigStore)
+  const { pinned, isMenuVisible, theme, settings, q } = useSnapshot(ConfigStore)
   const [activeTab, setActiveTab] = useState<MenuTab>("history")
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false)
+  const [searchQuery, setSearchQuery] = useState(q)
   const previousHistoryLength = useRef(history.length)
   const [enteringIndex, setEnteringIndex] = useState<number | null>(null)
   const primaryColor = theme.primary
@@ -147,6 +191,15 @@ export default function Menu () {
 
   const toggleHistoryFavorite = (index: number) => {
     toggleFavoriteAt(index)
+  }
+
+  const applySearchQuery = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    const nextQuery = searchQuery.trim()
+    if (nextQuery === ConfigStore.q) return
+    updateSearchQuery(nextQuery)
+    clearCache()
+    setLoaded(LoadState.FETCH_NEW)
   }
 
   return (
@@ -220,6 +273,27 @@ export default function Menu () {
           </section>
         ) : (
           <div className="settings-panel" aria-label="Settings">
+            <section className="settings-section">
+              <div className="settings-header">
+                <h2>Search Wallpapers</h2>
+                <p>Search titles or use Reddit search syntax.</p>
+              </div>
+
+              <form className="search-query-form" onSubmit={applySearchQuery}>
+                <label htmlFor="wallpaper-search-query">Search phrase</label>
+                <div className="search-query-controls">
+                  <input
+                    id="wallpaper-search-query"
+                    type="search"
+                    value={searchQuery}
+                    onChange={(event) => setSearchQuery(event.currentTarget.value)}
+                    placeholder='flair:"Desktop"'
+                  />
+                  <button type="submit">Search</button>
+                </div>
+              </form>
+            </section>
+
             <section className="settings-section">
               <div className="settings-header">
                 <h2>Accent Color</h2>

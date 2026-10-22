@@ -2,11 +2,12 @@ import "@testing-library/jest-dom"
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { useEffect } from "react"
-import { describe, expect, it } from "vitest"
+import { describe, expect, it, vi } from "vitest"
 import Menu from "../../src/components/Menu"
 import { AppStore, LoadState, setLoaded } from "../../src/stores/AppStore"
 import { ConfigStore } from "../../src/stores/ConfigStore"
 import { HistoryStore } from "../../src/stores/HistoryStore"
+import { CacheStore } from "../../src/stores/CacheStore"
 import { makeImageData, resetStores } from "../helpers"
 
 function setup() {
@@ -183,5 +184,42 @@ describe("Menu", () => {
 
     await user.click(screen.getByRole("button", { name: /large flash/i }))
     expect(ConfigStore.settings.rerollFlash).toBe(false)
+  })
+
+  it("applies a search phrase and refreshes the post cache", async () => {
+    resetStores()
+    CacheStore.data = [makeImageData()]
+    CacheStore.lastUpdated = Date.now()
+    AppStore.loaded = LoadState.LOADED
+    ConfigStore.pinned = true
+    const { user } = setup()
+
+    await user.click(screen.getByRole("button", { name: /settings/i }))
+    await user.clear(screen.getByRole("searchbox", { name: /search phrase/i }))
+    await user.type(
+      screen.getByRole("searchbox", { name: /search phrase/i }),
+      "  cyberpunk  ",
+    )
+    await user.click(screen.getByRole("button", { name: /^search$/i }))
+
+    expect(ConfigStore.q).toBe("cyberpunk")
+    expect(CacheStore.data).toEqual([])
+    expect(CacheStore.lastUpdated).toBe(-1)
+    expect(AppStore.loaded).toBe(LoadState.FETCH_NEW)
+    expect(ConfigStore.pinned).toBe(false)
+  })
+
+  it("downloads a history wallpaper without selecting its card", async () => {
+    resetStores()
+    HistoryStore.history = [makeImageData({ title: "Wallpaper" })]
+    const download = vi.fn((_options, callback: (id: number) => void) => callback(1))
+    vi.stubGlobal("chrome", { downloads: { download }, runtime: {} })
+    const { user } = setup()
+
+    await user.click(screen.getByRole("button", { name: /save wallpaper/i }))
+
+    expect(download).toHaveBeenCalled()
+    expect(screen.getByRole("status")).toHaveTextContent("Wallpaper saved.")
+    expect(ConfigStore.pinned).toBe(false)
   })
 })
