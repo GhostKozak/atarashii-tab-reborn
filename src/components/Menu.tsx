@@ -1,6 +1,7 @@
 import "./styles/Menu.scss"
 import {
   type CSSProperties,
+  type ChangeEvent,
   type FormEvent,
   type MouseEvent,
   useEffect,
@@ -11,6 +12,8 @@ import {
   FaCog,
   FaDownload,
   FaEyeDropper,
+  FaFileExport,
+  FaFileImport,
   FaHistory,
   FaStar,
   FaThumbtack,
@@ -31,10 +34,12 @@ import {
   HistoryStore,
   removeHistoryAt,
   toggleFavoriteAt,
+  importFavorites,
 } from "../stores/HistoryStore"
 import { LoadState, setLoaded } from "../stores/AppStore"
 import { clearCache } from "../stores/CacheStore"
 import { downloadWallpaper } from "../utils/downloadWallpaper"
+import { exportFavorites, parseFavoritesBackup } from "../utils/favoritesBackup"
 
 type MenuTab = "history" | "settings"
 
@@ -166,6 +171,7 @@ export default function Menu () {
   const [searchQuery, setSearchQuery] = useState(q)
   const [profileName, setProfileName] = useState("")
   const [selectedProfileId, setSelectedProfileId] = useState("")
+  const [backupMessage, setBackupMessage] = useState("")
   const previousHistoryLength = useRef(history.length)
   const [enteringIndex, setEnteringIndex] = useState<number | null>(null)
   const primaryColor = theme.primary
@@ -236,6 +242,36 @@ export default function Menu () {
     setSelectedProfileId("")
   }
 
+  const exportFavoriteWallpapers = () => {
+    const backup = exportFavorites(history)
+    const anchor = document.createElement("a")
+    anchor.href = `data:application/json;charset=utf-8,${encodeURIComponent(backup)}`
+    anchor.download = "atarashii-wallpaper-favorites.json"
+    anchor.click()
+    setBackupMessage("Favorites backup exported.")
+  }
+
+  const importFavoriteWallpapers = async (
+    event: ChangeEvent<HTMLInputElement>,
+  ) => {
+    const input = event.currentTarget
+    const file = input.files?.[0]
+    if (!file) return
+
+    try {
+      const favorites = parseFavoritesBackup(await file.text())
+      const count = importFavorites(favorites)
+      setBackupMessage(`Imported ${count} new favorite${count === 1 ? "" : "s"}.`)
+    } catch (error) {
+      console.error("[!] Failed to import favorite wallpapers:", error)
+      setBackupMessage(
+        error instanceof Error ? error.message : "Could not import this backup file.",
+      )
+    } finally {
+      input.value = ""
+    }
+  }
+
   return (
     <div className={`menu ${isMenuVisible ? "visible" : ""}`}>
       <aside className="menu-sidebar" aria-label="Menu tabs">
@@ -303,7 +339,28 @@ export default function Menu () {
                 <FaTrash size={14} />
                 Clear
               </button>
+
+              <button
+                type="button"
+                disabled={!history.some(({ favorite }) => favorite)}
+                onClick={exportFavoriteWallpapers}
+              >
+                <FaFileExport size={14} />
+                Export
+              </button>
+
+              <label className="import-favorites-button">
+                <FaFileImport size={14} />
+                Import
+                <input
+                  type="file"
+                  accept="application/json,.json"
+                  aria-label="Import favorite wallpapers"
+                  onChange={importFavoriteWallpapers}
+                />
+              </label>
             </nav>
+            {backupMessage && <p className="backup-feedback" role="status">{backupMessage}</p>}
           </section>
         ) : (
           <div className="settings-panel" aria-label="Settings">

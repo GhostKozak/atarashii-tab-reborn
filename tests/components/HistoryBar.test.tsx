@@ -9,6 +9,7 @@ import { ConfigStore } from "../../src/stores/ConfigStore"
 import { HistoryStore } from "../../src/stores/HistoryStore"
 import { CacheStore } from "../../src/stores/CacheStore"
 import { makeImageData, makePost, resetStores } from "../helpers"
+import { exportFavorites } from "../../src/utils/favoritesBackup"
 
 function setup() {
   return {
@@ -267,5 +268,49 @@ describe("Menu", () => {
     expect(download).toHaveBeenCalled()
     expect(screen.getByRole("status")).toHaveTextContent("Wallpaper saved.")
     expect(ConfigStore.pinned).toBe(false)
+  })
+
+  it("exports favorite backups and imports them without duplicates", async () => {
+    resetStores()
+    const favorite = makeImageData({
+      title: "Favorite wallpaper",
+      url: "https://i.redd.it/favorite.jpg",
+      favorite: true,
+    })
+    HistoryStore.history = [favorite]
+    const { user } = setup()
+    const clickSpy = vi.spyOn(HTMLAnchorElement.prototype, "click")
+      .mockImplementation(() => {})
+
+    await user.click(screen.getByRole("button", { name: /export/i }))
+
+    expect(clickSpy).toHaveBeenCalled()
+    expect(screen.getByRole("status")).toHaveTextContent("backup exported")
+
+    const imported = makeImageData({
+      title: "Imported wallpaper",
+      url: "https://i.redd.it/imported.jpg",
+      favorite: true,
+    })
+    const file = new File(
+      [exportFavorites([favorite, imported])],
+      "favorites.json",
+      { type: "application/json" },
+    )
+    Object.defineProperty(file, "text", {
+      value: async () => exportFavorites([favorite, imported]),
+    })
+    fireEvent.change(screen.getByLabelText(/import favorite wallpapers/i), {
+      target: { files: [file] },
+    })
+
+    await waitFor(() => {
+      expect(HistoryStore.history).toHaveLength(2)
+      expect(screen.getByRole("status")).toHaveTextContent("Imported 1 new favorite")
+    })
+    expect(HistoryStore.history[1]).toMatchObject({
+      url: imported.url,
+      favorite: true,
+    })
   })
 })

@@ -3,6 +3,7 @@ import {
   clearHistory,
   createImageData,
   HistoryStore,
+  importFavorites,
   pushPostToHistory,
   removeHistoryAt,
   toggleFavoriteAt,
@@ -133,5 +134,26 @@ describe("HistoryStore", () => {
     toggleFavoriteAt(99)
 
     expect(HistoryStore.history[0].favorite).toBe(false)
+  })
+
+  it("imports unique favorites without changing the current selection", () => {
+    const existing = makeImageData({
+      url: "https://i.redd.it/existing.jpg",
+      favorite: true,
+    })
+    const imported = makeImageData({
+      url: "https://i.redd.it/imported.jpg",
+      favorite: false,
+    })
+    HistoryStore.history = [existing]
+    HistoryStore.i = 0
+
+    expect(importFavorites([existing, imported, imported])).toBe(1)
+    expect(HistoryStore.history).toHaveLength(2)
+    expect(HistoryStore.history[1]).toMatchObject({
+      url: imported.url,
+      favorite: true,
+    })
+    expect(HistoryStore.i).toBe(0)
   })
 })

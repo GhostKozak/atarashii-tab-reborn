@@ -135,3 +135,18 @@ export const toggleFavoriteAt = (index: number) => {
 
   data.favorite = !data.favorite
 }
+
+export const importFavorites = (favorites: readonly ImageData[]) => {
+  const existingUrls = new Set(
+    HistoryStore.history.filter(({ favorite }) => favorite).map(({ url }) => url),
+  )
+  const additions: ImageData[] = []
+  for (const data of favorites) {
+    if (existingUrls.has(data.url)) continue
+    existingUrls.add(data.url)
+    additions.push({ ...data, favorite: true })
+  }
+
+  HistoryStore.history = [...HistoryStore.history, ...additions]
+  return additions.length
+}
