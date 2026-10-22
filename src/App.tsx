@@ -46,7 +46,26 @@ function App() {
       "--background-dim",
       String(config.theme.backgroundDim)
     )
-  }, [config.theme.primary, config.theme.backgroundDim])
+
+    document.documentElement.style.setProperty(
+      "--background-fit",
+      config.settings.backgroundFit,
+    )
+    document.documentElement.style.setProperty(
+      "--background-position",
+      config.settings.backgroundPosition,
+    )
+    document.documentElement.style.setProperty(
+      "--background-blur",
+      `${config.settings.backgroundBlur}px`,
+    )
+  }, [
+    config.theme.primary,
+    config.theme.backgroundDim,
+    config.settings.backgroundBlur,
+    config.settings.backgroundFit,
+    config.settings.backgroundPosition,
+  ])
 
   useEffect(() => {
     if (config.pinned && loaded === LoadState.FETCH_NEW) {

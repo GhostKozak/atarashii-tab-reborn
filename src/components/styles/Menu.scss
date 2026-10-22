@@ -450,9 +450,28 @@
       padding: 8px 12px;
       text-transform: uppercase;
     }
+
+    select {
+      min-width: 120px;
+      border: 1px solid rgba(white, 0.24);
+      border-radius: 8px;
+      background: rgba(black, 0.25);
+      color: white;
+      padding: 8px 10px;
+
+      option {
+        color: black;
+      }
+    }
   }
 
   .dim-opacity-slider {
+    width: 100%;
+    accent-color: var(--primary);
+    cursor: pointer;
+  }
+
+  .background-blur-slider {
     width: 100%;
     accent-color: var(--primary);
     cursor: pointer;

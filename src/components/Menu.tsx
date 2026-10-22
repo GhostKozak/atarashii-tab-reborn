@@ -474,6 +474,65 @@ export default function Menu () {
                 </label>
               </span>
             </section>
+
+            <section className="settings-section">
+              <div className="settings-header">
+                <h2>Background Image</h2>
+                <p>Adjust how wallpapers fit and appear on the new tab.</p>
+              </div>
+
+              <label className="toggle-picker-row" htmlFor="background-fit">
+                <span>Image fit</span>
+                <select
+                  id="background-fit"
+                  value={settings.backgroundFit}
+                  onChange={(event) => {
+                    ConfigStore.settings.backgroundFit =
+                      event.currentTarget.value as "cover" | "contain"
+                  }}
+                >
+                  <option value="cover">Fill screen</option>
+                  <option value="contain">Fit image</option>
+                </select>
+              </label>
+
+              <label className="toggle-picker-row" htmlFor="background-position">
+                <span>Image position</span>
+                <select
+                  id="background-position"
+                  value={settings.backgroundPosition}
+                  onChange={(event) => {
+                    ConfigStore.settings.backgroundPosition =
+                      event.currentTarget.value as typeof settings.backgroundPosition
+                  }}
+                >
+                  <option value="center">Center</option>
+                  <option value="top">Top</option>
+                  <option value="bottom">Bottom</option>
+                  <option value="left">Left</option>
+                  <option value="right">Right</option>
+                </select>
+              </label>
+
+              <label className="range-picker-row" htmlFor="background-blur">
+                <span>Background blur</span>
+                <strong>{settings.backgroundBlur}px</strong>
+              </label>
+              <input
+                id="background-blur"
+                className="background-blur-slider"
+                type="range"
+                min="0"
+                max="10"
+                step="1"
+                value={settings.backgroundBlur}
+                onChange={(event) => {
+                  ConfigStore.settings.backgroundBlur = Number(
+                    event.currentTarget.value,
+                  )
+                }}
+              />
+            </section>
           </div>
         )}
       </div>

@@ -51,6 +51,9 @@ export type ConfigState = {
   settings: {
     soundEffects: boolean
     rerollFlash: boolean
+    backgroundFit: "cover" | "contain"
+    backgroundPosition: "center" | "top" | "bottom" | "left" | "right"
+    backgroundBlur: number
   }
 }
 
@@ -93,6 +96,9 @@ export const { store: ConfigStore } = await persist<ConfigState>(
     settings: {
       soundEffects: true,
       rerollFlash: true,
+      backgroundFit: "cover",
+      backgroundPosition: "center",
+      backgroundBlur: 0,
     },
   },
   "config"

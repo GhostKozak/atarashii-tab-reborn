@@ -239,6 +239,22 @@ describe("Menu", () => {
     expect(ConfigStore.savedSearches).toEqual([])
   })
 
+  it("updates background fit, position, and blur settings", async () => {
+    resetStores()
+    const { user } = setup()
+
+    await user.click(screen.getByRole("button", { name: /settings/i }))
+    await user.selectOptions(screen.getByLabelText(/image fit/i), "contain")
+    await user.selectOptions(screen.getByLabelText(/image position/i), "top")
+    fireEvent.change(screen.getByLabelText(/background blur/i), {
+      target: { value: "6" },
+    })
+
+    expect(ConfigStore.settings.backgroundFit).toBe("contain")
+    expect(ConfigStore.settings.backgroundPosition).toBe("top")
+    expect(ConfigStore.settings.backgroundBlur).toBe(6)
+  })
+
   it("downloads a history wallpaper without selecting its card", async () => {
     resetStores()
     HistoryStore.history = [makeImageData({ title: "Wallpaper" })]

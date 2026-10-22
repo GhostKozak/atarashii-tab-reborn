@@ -25,6 +25,9 @@ export function resetStores() {
     isMenuVisible: false,
   })
   ConfigStore.theme.primary = "#ffc400"
+  ConfigStore.settings.backgroundFit = "cover"
+  ConfigStore.settings.backgroundPosition = "center"
+  ConfigStore.settings.backgroundBlur = 0
 
   HistoryStore.history = []
   HistoryStore.i = -1

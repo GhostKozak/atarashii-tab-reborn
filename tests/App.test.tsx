@@ -101,6 +101,20 @@ describe("App", () => {
     expect(AppStore.loaded).toBe(LoadState.LOADED)
   })
 
+  it("applies persisted background display settings", async () => {
+    ConfigStore.settings.backgroundFit = "contain"
+    ConfigStore.settings.backgroundPosition = "top"
+    ConfigStore.settings.backgroundBlur = 4
+
+    render(<App />)
+
+    await waitFor(() => {
+      expect(document.documentElement.style.getPropertyValue("--background-fit")).toBe("contain")
+      expect(document.documentElement.style.getPropertyValue("--background-position")).toBe("top")
+      expect(document.documentElement.style.getPropertyValue("--background-blur")).toBe("4px")
+    })
+  })
+
   it("shows a retry action when Reddit requests fail", async () => {
     fetchPostsMock.mockRejectedValue(new Error("Reddit is unavailable"))
     const user = userEvent.setup()
