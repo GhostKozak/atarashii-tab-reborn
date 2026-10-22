@@ -4,6 +4,12 @@ type DownloadOptions = {
   saveAs: boolean
 }
 
+type BrowserDownloads = {
+  downloads: {
+    download: (options: DownloadOptions) => Promise<number>
+  }
+}
+
 type ChromeDownloads = {
   downloads: {
     download: (
@@ -38,28 +44,34 @@ export function downloadWallpaper(imageUrl: string, title: string) {
     return Promise.reject(new Error("Only HTTPS i.redd.it wallpapers can be saved"))
   }
 
-  const chromeApi = (globalThis as typeof globalThis & { chrome?: ChromeDownloads })
-    .chrome
+  const options = {
+    url: url.href,
+    filename: getFilename(url, title),
+    saveAs: true,
+  }
+  const browserApi = (globalThis as typeof globalThis & { browser?: BrowserDownloads })
+    .browser
+
+  if (browserApi?.downloads) {
+    return browserApi.downloads.download(options).then(() => undefined)
+  }
+
+  const chromeApi = (globalThis as typeof globalThis & {
+    chrome?: ChromeDownloads
+  }).chrome
   if (!chromeApi?.downloads) {
     return Promise.reject(new Error("The browser downloads API is unavailable"))
   }
 
   return new Promise<void>((resolve, reject) => {
-    chromeApi.downloads.download(
-      {
-        url: url.href,
-        filename: getFilename(url, title),
-        saveAs: true,
-      },
-      (downloadId) => {
-        if (chromeApi.runtime.lastError) {
-          reject(new Error(chromeApi.runtime.lastError.message || "Wallpaper download failed"))
-        } else if (downloadId === undefined) {
-          reject(new Error("The browser did not start the wallpaper download"))
-        } else {
-          resolve()
-        }
-      },
-    )
+    chromeApi.downloads.download(options, (downloadId) => {
+      if (chromeApi.runtime.lastError) {
+        reject(new Error(chromeApi.runtime.lastError.message || "Wallpaper download failed"))
+      } else if (downloadId === undefined) {
+        reject(new Error("The browser did not start the wallpaper download"))
+      } else {
+        resolve()
+      }
+    })
   })
 }

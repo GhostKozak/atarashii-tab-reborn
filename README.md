@@ -12,6 +12,15 @@
 - Filter / sort wallpapers by time span, relevance, & NSFW
 - Pin your favorite wallpapers
 - Search for source images on SauceNAO, iqdb.org, and ascii2d.net
+- Compatible with Chrome and Firefox desktop
+
+## Firefox
+
+Build the extension with `pnpm build`, then open `about:debugging#/runtime/this-firefox` in Firefox and choose **Load Temporary Add-on**. Select `dist/manifest.json`.
+
+Temporary add-ons are removed when Firefox closes. A permanent Firefox installation requires a signed release from Mozilla Add-ons.
+
+Wallpaper search phrases are sent directly to Reddit to fetch matching posts; the extension does not collect or store search analytics.
 
 ## Attribution & Credits
 - Posts are directly scraped from [r/Animewallpaper](https://reddit.com/r/Animewallpaper)

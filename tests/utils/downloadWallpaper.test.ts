@@ -21,6 +21,19 @@ describe("downloadWallpaper", () => {
     )
   })
 
+  it("uses Firefox's Promise-based downloads API when available", async () => {
+    const download = vi.fn().mockResolvedValue(9)
+    vi.stubGlobal("browser", { downloads: { download } })
+
+    await downloadWallpaper("https://i.redd.it/wallpaper.jpg", "Wallpaper")
+
+    expect(download).toHaveBeenCalledWith({
+      url: "https://i.redd.it/wallpaper.jpg",
+      filename: "Wallpapers/Wallpaper.jpg",
+      saveAs: true,
+    })
+  })
+
   it("rejects unsupported image hosts", async () => {
     await expect(
       downloadWallpaper("https://example.com/wallpaper.jpg", "Wallpaper"),
@@ -37,5 +50,14 @@ describe("downloadWallpaper", () => {
     await expect(
       downloadWallpaper("https://i.redd.it/wallpaper.jpg", "Wallpaper"),
     ).rejects.toThrow("Permission denied")
+  })
+
+  it("propagates Firefox downloads API errors", async () => {
+    const download = vi.fn().mockRejectedValue(new Error("Download denied"))
+    vi.stubGlobal("browser", { downloads: { download } })
+
+    await expect(
+      downloadWallpaper("https://i.redd.it/wallpaper.jpg", "Wallpaper"),
+    ).rejects.toThrow("Download denied")
   })
 })

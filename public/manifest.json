@@ -3,6 +3,15 @@
   "description": "Displays anime wallpapers from r/Animewallpaper on your new tab page",
   "version": "0.1.11",
   "manifest_version": 3,
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "atarashii-tab-reborn@ghostkozak",
+      "strict_min_version": "140.0",
+      "data_collection_permissions": {
+        "required": ["searchTerms"]
+      }
+    }
+  },
   "chrome_url_overrides": {
     "newtab": "index.html"
   },
