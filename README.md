@@ -1,41 +1,68 @@
-# Atarashii Tab Page
+# Atarashii Tab Reborn
 
-![marquee promo tile](marketing/marquee_promo_tile.png)
+![Atarashii Tab promotional artwork](marketing/marquee_promo_tile.png)
 
-新しい (New) Tab Page displays anime wallpapers from Reddit's r/Animewallpaper or Wallhaven on your new tab page.
+Atarashii Tab Reborn is a new-tab extension that displays wallpapers from Wallhaven or Reddit's [r/Animewallpaper](https://www.reddit.com/r/Animewallpaper/).
 
-[![Build](https://github.com/cf12/atarashii-tab/actions/workflows/build.yml/badge.svg)](https://github.com/cf12/atarashii-tab/actions/workflows/build.yml)
+[![Build](https://github.com/GhostKozak/atarashii-tab-reborn/actions/workflows/build.yml/badge.svg)](https://github.com/GhostKozak/atarashii-tab-reborn/actions/workflows/build.yml)
 
 ## Features
-- HD wallpaper backgrounds from [r/Animewallpaper](https://reddit.com/r/Animewallpaper) or [Wallhaven](https://wallhaven.cc), with Wallhaven category, purity, sort, resolution, aspect ratio, color, and file type filters
-- Title, anime, and resolution details pulled from original reddit post
-- Filter / sort wallpapers by time span, relevance, & NSFW
-- Pin your favorite wallpapers
-- Search for source images on SauceNAO, iqdb.org, and ascii2d.net
-- Compatible with Chrome and Firefox desktop
 
-## Firefox
+- Wallhaven is the default wallpaper source; switch to Reddit at any time.
+- Browse Wallhaven's hot, top, and new results, or configure categories, content ratings, sorting, resolution, aspect ratio, dominant color, and file type.
+- Use an optional Wallhaven API key to request NSFW results.
+- Search by phrase and save named search profiles.
+- Browse wallpaper history, save favorites, and export or import favorite backups.
+- Download wallpapers and use reverse-image-search links.
+- Customize the accent color, background dimming, fit, position, and blur.
+- Supports Chrome and Firefox desktop.
 
-Run `pnpm build:packages` to build and zip separate browser packages:
+## Build and package
 
-- Chrome: `dist/atarashii-tab-chrome.zip`
-- Firefox: `dist/atarashii-tab-firefox.zip`
+Requirements: Node.js, pnpm, and the `zip` command-line utility.
 
-The command requires the `zip` command-line utility. To load the unpacked build temporarily in Firefox, open `about:debugging#/runtime/this-firefox` and select `dist/firefox/manifest.json`.
+```sh
+pnpm install
+pnpm build:packages
+```
 
-Temporary add-ons are removed when Firefox closes. A permanent Firefox installation requires a signed release from Mozilla Add-ons.
+The command runs the strict TypeScript check and creates store-uploadable ZIP packages:
 
-Wallpaper search phrases are sent directly to the selected source (Reddit or Wallhaven) to fetch matching posts; the extension does not collect or store search analytics. Wallhaven filters include categories, content ratings, sorting, resolution, aspect ratio, and color. NSFW results require a Wallhaven API key; the key is stored locally in the extension settings and sent to Wallhaven with searches.
+- Chrome: `dist/atarashii-tab-reborn-chrome.zip`
+- Firefox: `dist/atarashii-tab-reborn-firefox.zip`
 
-## Attribution & Credits
-- Posts are fetched from [r/Animewallpaper](https://reddit.com/r/Animewallpaper) or the [Wallhaven API](https://wallhaven.cc/help/api)
-- Wallpaper images are directly fetched from [i.redd.it](https://i.redd.it/) or [Wallhaven](https://wallhaven.cc)
-- Wallpaper artwork is attributed to original artists & creators
-- Promotional image background: [「GG~ありがと〜！」](https://www.pixiv.net/en/artworks/84017469) by [HOJI](https://www.pixiv.net/en/users/19133926) on [pixiv](https://www.pixiv.net/)
+The build output also contains unpacked browser-specific folders at `dist/chrome` and `dist/firefox`.
 
+### Load a development build
 
-[![available in chrome web store](https://wd.imgix.net/image/BrQidfK9jaQyIHwdw91aVpkPiib2/LclHxMxqoswLNRcUW3m5.png)](https://chrome.google.com/webstore/detail/atarashii-new-tab-page/dlhcacedlaiagoocbbgkeclgklanpmim)
+- **Chrome:** open `chrome://extensions`, enable **Developer mode**, choose **Load unpacked**, and select `dist/chrome`.
+- **Firefox:** open `about:debugging#/runtime/this-firefox`, choose **Load Temporary Add-on**, and select `dist/firefox/manifest.json`.
 
-## Acknowledgements / Fork Info
+Firefox removes temporary add-ons when it closes. For regular Firefox installations, submit the Firefox package to [AMO](https://addons.mozilla.org/developers/) for signing. Chrome packages can be submitted through the [Chrome Web Store Developer Dashboard](https://chrome.google.com/webstore/devconsole).
 
-This project is a continuation and rewrite of [atarashii-tab](https://github.com/cf12/atarashii-tab) by @cf12, licensed under the MIT License.
+## Releases
+
+Pushing a Git tag starts the GitHub Actions build workflow. It creates both browser packages and attaches them to the GitHub Release. For example:
+
+```sh
+git tag v0.2.0
+git push origin v0.2.0
+```
+
+Use a new, higher version in `package.json` and `public/manifest.json` for each store release.
+
+## Privacy
+
+Wallpaper search phrases are sent directly to the selected provider (Reddit or Wallhaven) to fetch results. The extension does not send search analytics to an Atarashii Tab Reborn server. Settings, wallpaper history, favorites, and an optional Wallhaven API key are stored locally by the extension in the browser. When used, the API key is sent to Wallhaven with API requests and is not included in search URLs or saved search profiles.
+
+Reddit and Wallhaven are third-party services and have their own privacy practices. The extension's Firefox manifest declares the `searchTerms` data-collection permission to describe the search phrases sent to those providers.
+
+## Attribution and acknowledgements
+
+- This project is a continuation and rewrite of [atarashii-tab](https://github.com/cf12/atarashii-tab) by [@cf12](https://github.com/cf12), originally licensed under the MIT License. See [LICENSE](LICENSE).
+- Wallpaper results are provided by [r/Animewallpaper](https://www.reddit.com/r/Animewallpaper/) and the [Wallhaven API](https://wallhaven.cc/help/api). Artwork remains the property of its respective artists and creators.
+- Promotional artwork: [「GG~ありがと〜！」](https://www.pixiv.net/en/artworks/84017469) by [HOJI](https://www.pixiv.net/en/users/19133926) on [pixiv](https://www.pixiv.net/).
+
+## AI-assisted development
+
+AI tools were used to assist with parts of this fork's implementation, debugging, and documentation. The project maintainer directs and reviews changes and is responsible for the published project.

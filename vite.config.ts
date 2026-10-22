@@ -167,9 +167,9 @@ export default defineConfig({
           dest: "",
           transform: (content) => {
             return JSON.stringify({
+              ...JSON.parse(content.toString()),
               description: packageJson.description,
               version: packageJson.version,
-              ...JSON.parse(content.toString()),
             });
           },
         },
