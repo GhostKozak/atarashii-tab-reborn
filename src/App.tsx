@@ -25,6 +25,7 @@ import {
   type RedditPost,
 } from "./stores/HistoryStore"
 import { fetchPosts } from "./utils/fetchPosts"
+import { RECENT_WALLPAPER_LIMIT, selectWallpaper } from "./utils/selectWallpaper"
 import MenuButton from "./components/MenuButton"
 
 function App() {
@@ -86,8 +87,17 @@ function App() {
         return
       }
 
-      const num = Math.floor(Math.random() * posts.length)
-      const post = posts[num]
+      const recentIds = new Set(
+        HistoryStore.history
+          .slice(-RECENT_WALLPAPER_LIMIT)
+          .flatMap(({ redditId }) => redditId ? [redditId] : []),
+      )
+      const post = selectWallpaper(posts, recentIds)
+      if (!post) {
+        setLoaded(LoadState.LOADED)
+        return
+      }
+      const num = posts.indexOf(post)
 
       console.log("[i] Loading post:", post)
 

@@ -1,6 +1,7 @@
 export type ImageData = {
   title: string
   res: string
+  redditId?: string
   url: string
   link: string
   nums: readonly [i: number, total: number]

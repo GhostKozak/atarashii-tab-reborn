@@ -76,6 +76,7 @@ export const createImageData = (
   return {
     title: parts.join(" • "),
     res: resolution || "",
+    redditId: post.id,
     url: post.url,
     backgroundUrl: pickImageUrl(post, window.innerWidth, window.innerHeight),
     thumbnailUrl: pickImageUrl(post, 192, 108),
