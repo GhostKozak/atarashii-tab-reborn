@@ -4,7 +4,7 @@ const path = require("path")
 const extPath = path.join(__dirname, "../build/index.html")
 const num = 5
 
-;(async () => {
+void (async () => {
   const browser = await chromium.launch({
     headless: false,
     args: ["--disable-web-security"],

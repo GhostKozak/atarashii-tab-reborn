@@ -1,5 +1,5 @@
-import { cleanup, fireEvent, render, screen } from "@testing-library/react"
-import { bench, describe } from "vitest"
+import { fireEvent, render, screen } from "@testing-library/react"
+import { describe, expect, it } from "vite-plus/test"
 import Menu from "../../src/components/Menu"
 import { ConfigStore } from "../../src/stores/ConfigStore"
 import { HistoryStore } from "../../src/stores/HistoryStore"
@@ -23,14 +23,14 @@ function seedSettingsPanel() {
 }
 
 describe("settings panel performance drift", () => {
-  bench("render settings panel", () => {
+  it("renders the settings panel", () => {
     seedSettingsPanel()
     render(<Menu />)
     fireEvent.click(screen.getByRole("button", { name: /settings/i }))
-    cleanup()
+    expect(screen.getByLabelText("Settings")).toBeVisible()
   })
 
-  bench("apply theme settings", () => {
+  it("applies theme settings", () => {
     seedSettingsPanel()
     render(<Menu />)
     fireEvent.click(screen.getByRole("button", { name: /settings/i }))
@@ -38,15 +38,17 @@ describe("settings panel performance drift", () => {
     fireEvent.change(document.querySelector(".dim-opacity-slider") as HTMLInputElement, {
       target: { value: "0.5" },
     })
-    cleanup()
+    expect(ConfigStore.theme.primary).toBe("#7c5cff")
+    expect(ConfigStore.theme.backgroundDim).toBe(0.5)
   })
 
-  bench("toggle reroll settings", () => {
+  it("toggles reroll settings", () => {
     seedSettingsPanel()
     render(<Menu />)
     fireEvent.click(screen.getByRole("button", { name: /settings/i }))
     fireEvent.click(screen.getByRole("button", { name: /reroll jingle/i }))
     fireEvent.click(screen.getByRole("button", { name: /large flash/i }))
-    cleanup()
+    expect(ConfigStore.settings.soundEffects).toBe(false)
+    expect(ConfigStore.settings.rerollFlash).toBe(false)
   })
 })

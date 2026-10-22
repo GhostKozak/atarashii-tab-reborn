@@ -14,6 +14,7 @@ import "./App.scss"
 import {
   AppStore,
   LoadState,
+  setFetchError,
   setLoaded,
 } from "./stores/AppStore"
 import { CacheStore } from "./stores/CacheStore"
@@ -27,7 +28,7 @@ import { fetchPosts } from "./utils/fetchPosts"
 import MenuButton from "./components/MenuButton"
 
 function App() {
-  const { loaded, showRollOverlay } = useSnapshot(AppStore)
+  const { loaded, showRollOverlay, fetchError } = useSnapshot(AppStore)
   const config = useSnapshot(ConfigStore)
   const cache = useSnapshot(CacheStore)
   const { history, i } = useSnapshot(HistoryStore)
@@ -61,6 +62,7 @@ function App() {
 
     async function run() {
       let posts: RedditPost[]
+      setFetchError(null)
 
       // Cache for 24 hours
       if (
@@ -97,6 +99,7 @@ function App() {
       if (ignore) return
 
       console.error("[!] Failed to load Reddit posts:", error)
+      setFetchError("Could not load wallpapers from Reddit. Check your connection and try again.")
       setLoaded(LoadState.LOADED)
     })
 
@@ -147,7 +150,9 @@ function App() {
           <footer className="to-bottom hideable">
             <div className="attr">
               <p className="attr-from to-load to-delay-3">
-                {data === null ? (
+                {fetchError ? (
+                  <strong role="alert">Could not load wallpapers</strong>
+                ) : data === null ? (
                   <strong>
                     No images found <FaSadTear size={20} />
                   </strong>
@@ -162,7 +167,21 @@ function App() {
               </p>
 
               <p className="attr-bottom to-load to-delay-4">
-                {data === null ? (
+                {fetchError ? (
+                  <>
+                    {fetchError}{" "}
+                    <button
+                      type="button"
+                      className="retry-fetch-button"
+                      onClick={() => {
+                        setFetchError(null)
+                        setLoaded(LoadState.FETCH_NEW)
+                      }}
+                    >
+                      Try again
+                    </button>
+                  </>
+                ) : data === null ? (
                   <>Try different filters! • Reddit down perhaps?</>
                 ) : (
                   <>

@@ -5,7 +5,7 @@ import {
   screen,
 } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
-import { describe, expect, it, vi } from "vitest"
+import { describe, expect, it, vi } from "vite-plus/test"
 import Config from "../src/components/Config"
 import { AppStore, LoadState } from "../src/stores/AppStore"
 import {
@@ -240,12 +240,14 @@ describe("Reroll button", async () => {
       },
       connect: vi.fn(),
     }
-    const AudioContextMock = vi.fn(() => ({
-      currentTime: 10,
-      destination: {},
-      createGain: vi.fn(() => gain),
-      createOscillator: vi.fn(() => oscillator),
-    }))
+    const AudioContextMock = vi.fn(function (this: object) {
+      Object.assign(this, {
+        currentTime: 10,
+        destination: {},
+        createGain: vi.fn(() => gain),
+        createOscillator: vi.fn(() => oscillator),
+      })
+    })
     vi.stubGlobal("AudioContext", AudioContextMock)
     vi.stubGlobal("requestAnimationFrame", (callback: FrameRequestCallback) => {
       callback(0)

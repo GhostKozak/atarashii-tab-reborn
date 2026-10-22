@@ -3,7 +3,7 @@ import { useState, useEffect } from "react"
 import './styles/TimeDate.scss'
 
 export const TimeDate = function () {
-  const [now, setNow] = useState(new Date())
+  const [now, setNow] = useState(() => new Date())
 
   useEffect(() => {
     const interval = setInterval(() => setNow(new Date()), 1000)

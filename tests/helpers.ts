@@ -7,6 +7,7 @@ import type { ImageData } from "../src/types/ImageData"
 export function resetStores() {
   AppStore.loaded = LoadState.FETCH_NEW
   AppStore.showRollOverlay = false
+  AppStore.fetchError = null
 
   CacheStore.lastUpdated = -1
   CacheStore.data = []

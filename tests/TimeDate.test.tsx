@@ -1,6 +1,6 @@
 import "@testing-library/jest-dom"
 import { render, screen } from "@testing-library/react"
-import { describe, expect, it, vi } from "vitest"
+import { describe, expect, it, vi } from "vite-plus/test"
 import { TimeDate } from "../src/components/TimeDate"
 
 const now = new Date("2024-09-10T15:49:00")
@@ -15,11 +15,11 @@ describe("TimeDate", () => {
   it("should render current time", () => {
     setup()
 
-    // format: 3:49 PM
+    // Match the component's locale-dependent time format.
     const time = now.toLocaleTimeString(undefined, {
       hour: "numeric",
-      minute: "2-digit",
-      hour12: true,
+      minute: "numeric",
+      second: undefined,
     })
 
     expect(screen.getByText(time)).toBeVisible()

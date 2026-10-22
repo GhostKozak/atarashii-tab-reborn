@@ -1,7 +1,7 @@
 import "@testing-library/jest-dom"
 import { fireEvent, render, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
-import { beforeEach, describe, expect, it, vi } from "vitest"
+import { beforeEach, describe, expect, it, vi } from "vite-plus/test"
 import App from "../../src/App"
 import { AppStore, LoadState } from "../../src/stores/AppStore"
 import { ConfigStore } from "../../src/stores/ConfigStore"

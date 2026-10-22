@@ -19,6 +19,7 @@ import {
 import {
   ConfigStore,
   PRIMARY_COLOR_PRESETS,
+  unpinWallpaper,
   updateSearchQuery,
 } from "../stores/ConfigStore"
 import { useSnapshot } from "valtio"
@@ -180,12 +181,12 @@ export default function Menu () {
   }, [history.length])
 
   const clearAllHistory = () => {
-    ConfigStore.pinned = false
+    unpinWallpaper()
     clearHistory()
   }
 
   const removeHistoryCard = (index: number) => {
-    if (pinned && historyIndex === index) ConfigStore.pinned = false
+    if (pinned && historyIndex === index) unpinWallpaper()
     removeHistoryAt(index)
   }
 
@@ -291,6 +292,10 @@ export default function Menu () {
                   />
                   <button type="submit">Search</button>
                 </div>
+                <p className="search-query-note">
+                  If Reddit&apos;s JSON API is unavailable, the RSS fallback
+                  provides up to 25 results instead of 200.
+                </p>
               </form>
             </section>
 

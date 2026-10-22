@@ -2,13 +2,13 @@ import "@testing-library/jest-dom"
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { useEffect } from "react"
-import { describe, expect, it, vi } from "vitest"
+import { describe, expect, it, vi } from "vite-plus/test"
 import Menu from "../../src/components/Menu"
 import { AppStore, LoadState, setLoaded } from "../../src/stores/AppStore"
 import { ConfigStore } from "../../src/stores/ConfigStore"
 import { HistoryStore } from "../../src/stores/HistoryStore"
 import { CacheStore } from "../../src/stores/CacheStore"
-import { makeImageData, resetStores } from "../helpers"
+import { makeImageData, makePost, resetStores } from "../helpers"
 
 function setup() {
   return {
@@ -188,7 +188,7 @@ describe("Menu", () => {
 
   it("applies a search phrase and refreshes the post cache", async () => {
     resetStores()
-    CacheStore.data = [makeImageData()]
+    CacheStore.data = [makePost()]
     CacheStore.lastUpdated = Date.now()
     AppStore.loaded = LoadState.LOADED
     ConfigStore.pinned = true

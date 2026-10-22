@@ -1,9 +1,10 @@
-import { describe, expect, it } from "vitest"
+import { describe, expect, it } from "vite-plus/test"
 import { CacheStore, clearCache } from "../../src/stores/CacheStore"
+import { makePost } from "../helpers"
 
 describe("CacheStore helpers", () => {
   it("clearCache resets cache data and timestamp", () => {
-    CacheStore.data = [{ id: "x" }]
+    CacheStore.data = [makePost({ id: "x" })]
     CacheStore.lastUpdated = 12345
 
     clearCache()

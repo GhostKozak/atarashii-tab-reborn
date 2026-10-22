@@ -1,4 +1,3 @@
-/// <reference types="vite-plus" />
 import { defineConfig, lazyPlugins } from "vite-plus";
 import react from "@vitejs/plugin-react";
 import { viteStaticCopy } from "vite-plugin-static-copy";

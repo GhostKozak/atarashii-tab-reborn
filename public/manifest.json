@@ -25,9 +25,8 @@
     "downloads"
   ],
   "host_permissions": [
-    "https://*.reddit.com/*",
-    "https://www.reddit.com/r/Animewallpaper/search.rss*",
-    "https://www.reddit.com/r/Animewallpaper/search.json*",
-    "https://i.redd.it/"
+    "https://www.reddit.com/*",
+    "https://i.redd.it/*",
+    "https://preview.redd.it/*"
   ]
 }

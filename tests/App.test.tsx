@@ -1,6 +1,7 @@
 import "@testing-library/jest-dom"
 import { fireEvent, render, screen, waitFor } from "@testing-library/react"
-import { beforeEach, describe, expect, it, vi } from "vitest"
+import userEvent from "@testing-library/user-event"
+import { beforeEach, describe, expect, it, vi } from "vite-plus/test"
 import App from "../src/App"
 import { AppStore, LoadState } from "../src/stores/AppStore"
 import { CacheStore } from "../src/stores/CacheStore"
@@ -98,6 +99,26 @@ describe("App", () => {
     expect(screen.getByText(/try different filters/i)).toBeInTheDocument()
     expect(screen.queryByTestId("background-image")).not.toBeInTheDocument()
     expect(AppStore.loaded).toBe(LoadState.LOADED)
+  })
+
+  it("shows a retry action when Reddit requests fail", async () => {
+    fetchPostsMock.mockRejectedValue(new Error("Reddit is unavailable"))
+    const user = userEvent.setup()
+
+    render(<App />)
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "Could not load wallpapers",
+    )
+    expect(screen.getByText(/check your connection/i)).toBeInTheDocument()
+
+    fetchPostsMock.mockResolvedValueOnce([makePost()])
+    await user.click(screen.getByRole("button", { name: /try again/i }))
+
+    await waitFor(() => {
+      expect(fetchPostsMock).toHaveBeenCalledTimes(2)
+      expect(AppStore.loaded).toBe(LoadState.LOADING)
+    })
   })
 
   it("switches pinned rerolls to loading without fetching", async () => {

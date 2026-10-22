@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import {
   FaExclamationTriangle,
   FaEye,
@@ -84,26 +84,33 @@ const ValuePicker = ({
 function Config() {
   const config = useSnapshot(ConfigStore)
   const [isRolling, setIsRolling] = useState(false)
-  const rollOverlayTimeout = useRef<number | null>(null)
+  const [rollOverlayTimeout, setRollOverlayTimeout] = useState<number | null>(null)
 
   const reroll = useCallback(() => {
     if (config.settings.soundEffects) playRollSound()
     setIsRolling(false)
     setShowRollOverlay(false)
-    if (rollOverlayTimeout.current) window.clearTimeout(rollOverlayTimeout.current)
+    if (rollOverlayTimeout !== null) window.clearTimeout(rollOverlayTimeout)
 
     requestAnimationFrame(() => setIsRolling(true))
     if (config.settings.rerollFlash) {
       requestAnimationFrame(() => setShowRollOverlay(true))
 
-      rollOverlayTimeout.current = window.setTimeout(
-        () => setShowRollOverlay(false),
+      setRollOverlayTimeout(window.setTimeout(
+        () => {
+          setShowRollOverlay(false)
+          setRollOverlayTimeout(null)
+        },
         900
-      )
+      ))
     }
 
     setLoaded(LoadState.FETCH_NEW)
-  }, [config.settings.rerollFlash, config.settings.soundEffects])
+  }, [
+    config.settings.rerollFlash,
+    config.settings.soundEffects,
+    rollOverlayTimeout,
+  ])
 
   useEffect(() => {
     if (!isRolling) return
@@ -111,6 +118,11 @@ function Config() {
     const timeout = window.setTimeout(() => setIsRolling(false), 500)
     return () => window.clearTimeout(timeout)
   }, [isRolling])
+
+  useEffect(() => {
+    if (rollOverlayTimeout === null) return
+    return () => window.clearTimeout(rollOverlayTimeout)
+  }, [rollOverlayTimeout])
 
   const buttons = useMemo(
     () => [
