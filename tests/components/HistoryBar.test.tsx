@@ -8,6 +8,7 @@ import { AppStore, LoadState, setLoaded } from "../../src/stores/AppStore"
 import { ConfigStore } from "../../src/stores/ConfigStore"
 import { HistoryStore } from "../../src/stores/HistoryStore"
 import { CacheStore } from "../../src/stores/CacheStore"
+import { DownloadsStore, recordDownload } from "../../src/stores/DownloadsStore"
 import { makeImageData, makePost, resetStores } from "../helpers"
 import { exportFavorites } from "../../src/utils/favoritesBackup"
 
@@ -53,6 +54,26 @@ describe("Menu", () => {
     await waitFor(() => {
       expect(document.querySelector(".menu")).toHaveClass("visible")
     })
+  })
+
+  it("shows recent downloads in the downloads tab", async () => {
+    resetStores()
+    recordDownload(
+      { id: 7, title: "Saved wallpaper", url: "https://i.redd.it/saved.jpg" },
+      1_700_000_000_000,
+    )
+    const { user } = setup()
+
+    await user.click(screen.getByRole("button", { name: /downloads/i }))
+
+    expect(screen.getByRole("heading", { name: /recent downloads/i })).toBeInTheDocument()
+    expect(screen.getByRole("link", { name: "Saved wallpaper" })).toHaveAttribute(
+      "href",
+      "https://i.redd.it/saved.jpg",
+    )
+    expect(DownloadsStore.recent[0].startedAtIso).toBe(
+      "2023-11-14T22:13:20.000Z",
+    )
   })
 
   it("clicking an unpinned card pins it and loads the selection", async () => {
@@ -268,6 +289,11 @@ describe("Menu", () => {
     expect(download).toHaveBeenCalled()
     expect(screen.getByRole("status")).toHaveTextContent("Wallpaper saved.")
     expect(ConfigStore.pinned).toBe(false)
+    expect(DownloadsStore.recent[0]).toMatchObject({
+      id: 1,
+      title: "Wallpaper",
+      url: "https://i.redd.it/wallpaper.jpg",
+    })
   })
 
   it("exports favorite backups and imports them without duplicates", async () => {

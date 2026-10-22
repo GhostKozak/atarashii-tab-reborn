@@ -53,7 +53,7 @@ export function downloadWallpaper(imageUrl: string, title: string) {
     .browser
 
   if (browserApi?.downloads) {
-    return browserApi.downloads.download(options).then(() => undefined)
+    return browserApi.downloads.download(options)
   }
 
   const chromeApi = (globalThis as typeof globalThis & {
@@ -63,14 +63,14 @@ export function downloadWallpaper(imageUrl: string, title: string) {
     return Promise.reject(new Error("The browser downloads API is unavailable"))
   }
 
-  return new Promise<void>((resolve, reject) => {
+  return new Promise<number>((resolve, reject) => {
     chromeApi.downloads.download(options, (downloadId) => {
       if (chromeApi.runtime.lastError) {
         reject(new Error(chromeApi.runtime.lastError.message || "Wallpaper download failed"))
       } else if (downloadId === undefined) {
         reject(new Error("The browser did not start the wallpaper download"))
       } else {
-        resolve()
+        resolve(downloadId)
       }
     })
   })

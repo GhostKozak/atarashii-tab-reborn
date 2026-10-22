@@ -184,6 +184,22 @@ button {
         font-size: 0.8rem;
       }
 
+      .quick-save {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+
+        & > span {
+          color: rgba(white, 0.72);
+          font-size: 0.75rem;
+        }
+      }
+
+      .quick-save-button {
+        border-radius: 8px;
+        padding: 6px 10px;
+      }
+
       .attr-loader {
         position: absolute;
         bottom: 0;

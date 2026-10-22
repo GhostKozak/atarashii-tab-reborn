@@ -2,6 +2,7 @@ import { AppStore, LoadState } from "../src/stores/AppStore"
 import { CacheStore } from "../src/stores/CacheStore"
 import { ConfigStore } from "../src/stores/ConfigStore"
 import { HistoryStore } from "../src/stores/HistoryStore"
+import { DownloadsStore } from "../src/stores/DownloadsStore"
 import type { ImageData } from "../src/types/ImageData"
 
 export function resetStores() {
@@ -31,6 +32,7 @@ export function resetStores() {
 
   HistoryStore.history = []
   HistoryStore.i = -1
+  DownloadsStore.recent = []
 }
 
 export function makePost(overrides: Record<string, unknown> = {}) {

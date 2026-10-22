@@ -7,6 +7,7 @@ import { AppStore, LoadState } from "../src/stores/AppStore"
 import { CacheStore } from "../src/stores/CacheStore"
 import { ConfigStore } from "../src/stores/ConfigStore"
 import { HistoryStore } from "../src/stores/HistoryStore"
+import { DownloadsStore } from "../src/stores/DownloadsStore"
 import { fetchPosts } from "../src/utils/fetchPosts"
 import { makeImageData, makePost } from "./helpers"
 
@@ -61,6 +62,26 @@ describe("App", () => {
       expect(AppStore.loaded).toBe(LoadState.LOADED)
       expect(container.querySelector(".app-frame")).toHaveClass("load")
     })
+  })
+
+  it("quick-saves the current wallpaper and records it in recent downloads", async () => {
+    const download = vi.fn((_options, callback: (id: number) => void) => callback(42))
+    vi.stubGlobal("chrome", { downloads: { download }, runtime: {} })
+    const user = userEvent.setup()
+
+    render(<App />)
+
+    await user.click(await screen.findByRole("button", { name: /save current wallpaper/i }))
+
+    expect(download).toHaveBeenCalled()
+    expect(await screen.findByRole("status")).toHaveTextContent("Wallpaper saved.")
+    expect(DownloadsStore.recent).toMatchObject([
+      {
+        id: 42,
+        title: "Wallpaper • Artist",
+        url: "https://i.redd.it/wallpaper.jpg",
+      },
+    ])
   })
 
   it("uses fresh cached posts instead of fetching", async () => {

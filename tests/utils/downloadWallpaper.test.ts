@@ -6,10 +6,10 @@ describe("downloadWallpaper", () => {
     const download = vi.fn((_options, callback: (id: number) => void) => callback(7))
     vi.stubGlobal("chrome", { downloads: { download }, runtime: {} })
 
-    await downloadWallpaper(
+    await expect(downloadWallpaper(
       "https://i.redd.it/wallpaper.webp?width=1920",
       'A/B: "Wallpaper"',
-    )
+    )).resolves.toBe(7)
 
     expect(download).toHaveBeenCalledWith(
       {
@@ -25,7 +25,9 @@ describe("downloadWallpaper", () => {
     const download = vi.fn().mockResolvedValue(9)
     vi.stubGlobal("browser", { downloads: { download } })
 
-    await downloadWallpaper("https://i.redd.it/wallpaper.jpg", "Wallpaper")
+    await expect(
+      downloadWallpaper("https://i.redd.it/wallpaper.jpg", "Wallpaper"),
+    ).resolves.toBe(9)
 
     expect(download).toHaveBeenCalledWith({
       url: "https://i.redd.it/wallpaper.jpg",

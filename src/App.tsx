@@ -27,6 +27,7 @@ import {
 import { fetchPosts } from "./utils/fetchPosts"
 import { RECENT_WALLPAPER_LIMIT, selectWallpaper } from "./utils/selectWallpaper"
 import MenuButton from "./components/MenuButton"
+import { QuickSaveButton } from "./components/QuickSaveButton"
 
 function App() {
   const { loaded, showRollOverlay, fetchError } = useSnapshot(AppStore)
@@ -220,6 +221,7 @@ function App() {
                   </>
                 )}
               </p>
+              {data && !fetchError && <QuickSaveButton data={data} />}
 
               {loaded !== LoadState.LOADED && !config.incognito && (
                 <span className="attr-loader">

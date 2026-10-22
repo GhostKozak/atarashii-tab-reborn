@@ -18,6 +18,7 @@ import {
   FaStar,
   FaThumbtack,
   FaTrash,
+  FaClock,
 } from "react-icons/fa"
 import {
   ConfigStore,
@@ -40,8 +41,9 @@ import { LoadState, setLoaded } from "../stores/AppStore"
 import { clearCache } from "../stores/CacheStore"
 import { downloadWallpaper } from "../utils/downloadWallpaper"
 import { exportFavorites, parseFavoritesBackup } from "../utils/favoritesBackup"
+import { DownloadsStore, recordDownload } from "../stores/DownloadsStore"
 
-type MenuTab = "history" | "settings"
+type MenuTab = "history" | "downloads" | "settings"
 
 type MenuCardProps = {
   data: (typeof HistoryStore.history)[number]
@@ -71,7 +73,8 @@ function MenuCard({
     setDownloadMessage("Downloading wallpaper…")
 
     try {
-      await downloadWallpaper(data.url, data.title)
+      const id = await downloadWallpaper(data.url, data.title)
+      recordDownload({ id, url: data.url, title: data.title })
       setDownloadMessage("Wallpaper saved.")
     } catch (error) {
       console.error("[!] Failed to download wallpaper:", error)
@@ -164,6 +167,7 @@ function MenuCard({
 
 export default function Menu () {
   const { history, i: historyIndex } = useSnapshot(HistoryStore)
+  const { recent: recentDownloads } = useSnapshot(DownloadsStore)
   const { pinned, isMenuVisible, theme, settings, q, savedSearches } =
     useSnapshot(ConfigStore)
   const [activeTab, setActiveTab] = useState<MenuTab>("history")
@@ -286,6 +290,15 @@ export default function Menu () {
 
         <button
           type="button"
+          className={activeTab === "downloads" ? "active" : ""}
+          onClick={() => setActiveTab("downloads")}
+        >
+          <FaClock size={16} />
+          Downloads
+        </button>
+
+        <button
+          type="button"
           className={activeTab === "settings" ? "active" : ""}
           onClick={() => setActiveTab("settings")}
         >
@@ -361,6 +374,26 @@ export default function Menu () {
               </label>
             </nav>
             {backupMessage && <p className="backup-feedback" role="status">{backupMessage}</p>}
+          </section>
+        ) : activeTab === "downloads" ? (
+          <section className="downloads-panel" aria-label="Recent downloads">
+            <h2>Recent Downloads</h2>
+            {recentDownloads.length ? (
+              <ul>
+                {recentDownloads.map((download) => (
+                  <li key={download.id}>
+                    <a href={download.url} target="_blank" rel="noreferrer">
+                      {download.title || "Untitled wallpaper"}
+                    </a>
+                    <time dateTime={download.startedAtIso}>
+                      {download.startedAtLabel}
+                    </time>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p>No downloads yet. Save a wallpaper to see it here.</p>
+            )}
           </section>
         ) : (
           <div className="settings-panel" aria-label="Settings">
