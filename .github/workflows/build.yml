@@ -21,7 +21,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v7
         with:
-          ref: ${{ github.event.inputs.tag || github.ref }}
+          ref: ${{ github.sha }}
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v6
@@ -43,4 +43,5 @@ jobs:
         with:
           artifacts: dist/atarashii-tab-reborn-chrome.zip,dist/atarashii-tab-reborn-firefox.zip
           tag: ${{ github.event.inputs.tag || github.ref_name }}
+          commit: ${{ github.sha }}
           immutableCreate: true
