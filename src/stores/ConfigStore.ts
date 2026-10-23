@@ -188,14 +188,6 @@ export const { store: ConfigStore } = await persist<ConfigState>(
 
     isMenuVisible: false,
 
-    //   toggleNsfw: () => set({ nsfw: !get().nsfw }),
-    //   toggleIncognito: () => set({ incognito: !get().incognito }),
-    //   toggleHideGui: () => set({ hideGui: !get().hideGui }),
-    //   togglePinned: (v) => set({ pinned: v ?? !get().pinned }),
-
-    // set: (data) => set(data),
-    // toggle: (key) => set({ [key]: !get()[key] }),
-
     theme: {
       primary: PRIMARY_COLOR_PRESETS[0],
       backgroundDim: 0.35,
@@ -239,11 +231,6 @@ Object.assign(ConfigStore, {
 export const toggle = (key: keyof ConfigStateToggleableFields) => {
   ConfigStore[key] = !ConfigStore[key]
 }
-
-// export const togglePin = () => {
-//   ConfigStore.num = ConfigStore.num ? undefined : ConfigStore.num
-//   ConfigStore.pinned = !ConfigStore.pinned
-// }
 
 export const toggleNsfw = () => {
   ConfigStore.nsfw = !ConfigStore.nsfw

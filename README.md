@@ -45,8 +45,8 @@ Firefox removes temporary add-ons when it closes. For regular Firefox installati
 Pushing a Git tag starts the GitHub Actions build workflow. It creates both browser packages and attaches them to the GitHub Release. For example:
 
 ```sh
-git tag v0.2.0
-git push origin v0.2.0
+git tag v0.2.1
+git push origin v0.2.1
 ```
 
 Use a new, higher version in `package.json` and `public/manifest.json` for each store release.
