@@ -53,9 +53,7 @@ Use a new, higher version in `package.json` and `public/manifest.json` for each 
 
 ## Privacy
 
-Wallpaper search phrases are sent directly to the selected provider (Reddit or Wallhaven) to fetch results. The extension does not send search analytics to an Atarashii Tab Reborn server. Settings, wallpaper history, favorites, and an optional Wallhaven API key are stored locally by the extension in the browser. When used, the API key is sent to Wallhaven with API requests and is not included in search URLs or saved search profiles.
-
-Reddit and Wallhaven are third-party services and have their own privacy practices. The extension's Firefox manifest declares the `searchTerms` data-collection permission to describe the search phrases sent to those providers.
+Search phrases are sent to your selected wallpaper provider; settings and the optional Wallhaven API key are stored in the browser's local storage for the extension. The extension does not send analytics to an Atarashii Tab Reborn server. See the [Privacy Policy](PRIVACY.md) for details.
 
 ## Attribution and acknowledgements
 
